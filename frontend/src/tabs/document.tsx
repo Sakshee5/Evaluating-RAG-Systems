@@ -3,58 +3,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2, Upload, Plus } from "lucide-react";
-
-interface Document {
-  id: string;
-  file_name: string;
-  file_path: string;
-  file_type: string;
-  file_size: number;
-  file_extension: string;
-  session_id: string;
-  created_at: string;
-  processed: boolean;
-}
-
-interface Question {
-  id: string;
-  text: string;
-  session_id: string;
-  created_at: string;
-}
+import { useDocumentUpload } from "@/hooks/useDocumentUpload";
+import { useDeleteDocument } from "@/hooks/useDeleteDocument";
+import { useAddQuestion } from "@/hooks/useAddQuestion";
+import { useDeleteQuestion } from "@/hooks/useDeleteQuestion";
+import { Document } from "@/models/document";
+import { Question } from "@/models/question";
 
 interface DocumentsManagerProps {
   sessionId: string;
-  onDocumentsUpdated?: () => void;
+  onDocumentsUpdated?: (documents: Document[]) => void;
+  onQuestionsUpdated?: (questions: Question[]) => void;
 }
 
-export function DocumentsManager({ sessionId, onDocumentsUpdated }: DocumentsManagerProps) {
+export function DocumentsManager({ sessionId, onDocumentsUpdated, onQuestionsUpdated }: DocumentsManagerProps) {
+  const [newQuestion, setNewQuestion] = useState("");
   const [documents, setDocuments] = useState<Document[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [newQuestion, setNewQuestion] = useState("");
+  
+  // Using our custom hooks
+  const { uploadDocument } = useDocumentUpload();
+  const { deleteDocument } = useDeleteDocument();
+  const { addQuestion } = useAddQuestion();
+  const { deleteQuestion } = useDeleteQuestion();
 
   // Document handlers
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('session_id', sessionId);
-
     try {
-      const response = await fetch('http://localhost:8000/api/document/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload document');
-      }
-
-      const newDoc = await response.json();
-      setDocuments([...documents, newDoc]);
-      if (onDocumentsUpdated) onDocumentsUpdated();
+      const newDoc = await uploadDocument(file, sessionId);
+      setDocuments(prev => [...prev, newDoc]);
+      if (onDocumentsUpdated) onDocumentsUpdated([...documents, newDoc]);
     } catch (error) {
       console.error('Error uploading document:', error);
     }
@@ -63,95 +44,40 @@ export function DocumentsManager({ sessionId, onDocumentsUpdated }: DocumentsMan
     event.target.value = "";
   };
 
-  const deleteDocument = async (id: string) => {
+  const handleDeleteDocument = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/document/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete document');
-      }
-
-      setDocuments(documents.filter(doc => doc.id !== id));
-      if (onDocumentsUpdated) onDocumentsUpdated();
+      await deleteDocument(id);
+      setDocuments(prev => prev.filter(doc => doc.id !== id));
+      if (onDocumentsUpdated) onDocumentsUpdated(documents.filter(doc => doc.id !== id));
     } catch (error) {
       console.error('Error deleting document:', error);
     }
   };
 
   // Question handlers
-  const addQuestion = async () => {
+  const handleAddQuestion = async () => {
     if (!newQuestion.trim()) return;
 
     try {
-      const response = await fetch('http://localhost:8000/api/question', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: crypto.randomUUID(),
-          text: newQuestion,
-          session_id: sessionId,
-          created_at: new Date().toISOString(),
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add question');
-      }
-
-      const question = await response.json();
-      setQuestions([...questions, question]);
+      const newQ = await addQuestion(newQuestion, sessionId);
+      setQuestions(prev => [...prev, newQ]);
+      if (onQuestionsUpdated) onQuestionsUpdated([...questions, newQ]);
+      // Clear the input
       setNewQuestion("");
     } catch (error) {
       console.error('Error adding question:', error);
     }
   };
 
-  const deleteQuestion = async (id: string) => {
+  const handleDeleteQuestion = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/question/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete question');
-      }
-
-      setQuestions(questions.filter(q => q.id !== id));
+      await deleteQuestion(id);
+      setQuestions(prev => prev.filter(q => q.id !== id));
+      if (onQuestionsUpdated) onQuestionsUpdated(questions.filter(q => q.id !== id));
     } catch (error) {
       console.error('Error deleting question:', error);
     }
   };
-
-  // Load documents and questions when component mounts
-  useState(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch documents
-        const docsResponse = await fetch(`http://localhost:8000/api/documents/${sessionId}`);
-        if (docsResponse.ok) {
-          const docs = await docsResponse.json();
-          setDocuments(docs);
-        }
-
-        // Fetch questions
-        const questionsResponse = await fetch(`http://localhost:8000/api/questions/${sessionId}`);
-        if (questionsResponse.ok) {
-          const questionData = await questionsResponse.json();
-          setQuestions(questionData);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    if (sessionId) {
-      fetchData();
-    }
-  });
 
   return (
     <div className="space-y-8">
@@ -183,7 +109,7 @@ export function DocumentsManager({ sessionId, onDocumentsUpdated }: DocumentsMan
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => deleteDocument(doc.id)}
+                  onClick={() => handleDeleteDocument(doc.id)}
                   className="text-red-500 hover:text-red-700"
                 >
                   <Trash2 size={16} />
@@ -210,7 +136,7 @@ export function DocumentsManager({ sessionId, onDocumentsUpdated }: DocumentsMan
               onChange={(e) => setNewQuestion(e.target.value)}
               className="flex-1"
             />
-            <Button onClick={addQuestion} className="flex-shrink-0">
+            <Button onClick={handleAddQuestion} className="flex-shrink-0">
               <Plus size={16} className="mr-2" />
               Add
             </Button>
@@ -223,7 +149,7 @@ export function DocumentsManager({ sessionId, onDocumentsUpdated }: DocumentsMan
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => deleteQuestion(question.id)}
+                  onClick={() => handleDeleteQuestion(question.id || "")}
                   className="text-red-500 hover:text-red-700"
                 >
                   <Trash2 size={16} />

@@ -3,14 +3,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-
-interface Configuration {
-  chunking_strategy: string;
-  chunk_size: number;
-  embedding_model: string;
-  similarity_metric: string;
-  num_chunks: number;
-}
+import { Configuration } from "@/models/configuration";
 
 interface ConfigurationProps {
   configuration: Configuration;
