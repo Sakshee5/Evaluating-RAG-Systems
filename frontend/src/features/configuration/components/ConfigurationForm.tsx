@@ -23,38 +23,73 @@ export const ConfigurationForm = ({ configuration, onConfigurationChange, onSubm
             <SelectValue placeholder="Select chunking strategy" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="fixed">Fixed Size</SelectItem>
-            <SelectItem value="sentence">Sentence Based</SelectItem>
-            <SelectItem value="paragraph">Paragraph Based</SelectItem>
+              <SelectItem value="sentence">By Sentence</SelectItem>
+              <SelectItem value="paragraph">By Paragraph</SelectItem>
+              <SelectItem value="page">By Page</SelectItem>
+              <SelectItem value="tokens">By Tokens</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="chunk-size">Chunk Size</Label>
-        <Input
-          id="chunk-size"
-          type="number"
-          value={configuration.chunk_size}
-          onChange={(e) => onConfigurationChange({ ...configuration, chunk_size: parseInt(e.target.value) })}
-          min={100}
-          max={2000}
-          step={100}
-        />
-      </div>
+      {configuration.chunking_strategy === "tokens" && (
+        <div className="space-y-2">
+          <Label htmlFor="token-size">Tokens per Chunk</Label>
+          <Input
+            id="token-size"
+            type="number"
+            value={configuration.token_size}
+            onChange={(e) => onConfigurationChange({ ...configuration, token_size: parseInt(e.target.value) })}
+            min={50}
+            max={1000}
+            step={50}
+          />
+        </div>
+      )}
 
-      <div className="space-y-2">
-        <Label htmlFor="num-chunks">Number of Chunks</Label>
-        <Input
-          id="num-chunks"
-          type="number"
-          value={configuration.num_chunks}
-          onChange={(e) => onConfigurationChange({ ...configuration, num_chunks: parseInt(e.target.value) })}
-          min={1}
-          max={10}
-          step={1}
-        />
-      </div>
+      {configuration.chunking_strategy === "sentence" && (
+        <div className="space-y-2">
+          <Label htmlFor="sentence-size">Sentences per Chunk</Label>
+          <Input
+            id="sentence-size"
+            type="number"
+            value={configuration.sentence_size}
+            onChange={(e) => onConfigurationChange({ ...configuration, sentence_size: parseInt(e.target.value) })}
+            min={1}
+            max={100}
+            step={1}
+          />
+        </div>
+      )}
+
+      {configuration.chunking_strategy === "paragraph" && (
+        <div className="space-y-2">
+          <Label htmlFor="paragraph-size">Paragraphs per Chunk</Label>
+          <Input
+            id="paragraph-size"
+            type="number"
+            value={configuration.paragraph_size}
+            onChange={(e) => onConfigurationChange({ ...configuration, paragraph_size: parseInt(e.target.value) })}
+            min={1}
+            max={100}
+            step={1}
+          />
+        </div>
+      )}
+
+      {configuration.chunking_strategy === "page" && (
+        <div className="space-y-2">
+          <Label htmlFor="page-size">Pages per Chunk</Label>
+          <Input
+            id="page-size"
+            type="number"
+            value={configuration.page_size}
+            onChange={(e) => onConfigurationChange({ ...configuration, page_size: parseInt(e.target.value) })}
+            min={1}
+            max={100}
+            step={1}
+          />
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="embedding-model">Embedding Model</Label>
@@ -66,9 +101,12 @@ export const ConfigurationForm = ({ configuration, onConfigurationChange, onSubm
             <SelectValue placeholder="Select embedding model" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="text-embedding-ada-002">text-embedding-ada-002</SelectItem>
-            <SelectItem value="text-embedding-3-small">text-embedding-3-small</SelectItem>
-            <SelectItem value="text-embedding-3-large">text-embedding-3-large</SelectItem>
+              <SelectItem value="sentence-transformer">Sentence-Transformer (all-MiniLM-L6-v2)</SelectItem>
+              <SelectItem value="bert">BERT (bert-base-uncased)</SelectItem>
+              <SelectItem value="roberta">RoBERTa (roberta-base)</SelectItem>
+              <SelectItem value="distilbert">DistilBERT (distilbert-base-uncased)</SelectItem>
+              <SelectItem value="gpt2">GPT-2 (gpt2)</SelectItem>
+              <SelectItem value="fine-tuned-financial">Fine-tuned Financial (bge-base)</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -83,11 +121,24 @@ export const ConfigurationForm = ({ configuration, onConfigurationChange, onSubm
             <SelectValue placeholder="Select similarity metric" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="cosine">Cosine Similarity</SelectItem>
-            <SelectItem value="dot">Dot Product</SelectItem>
-            <SelectItem value="euclidean">Euclidean Distance</SelectItem>
+              <SelectItem value="cosine">Cosine Similarity</SelectItem>
+              <SelectItem value="euclidean">Euclidean Similarity</SelectItem>
+              <SelectItem value="jaccard">Jaccard Similarity</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="num-chunks">Number of Chunks</Label>
+        <Input
+          id="num-chunks"
+          type="number"
+          value={configuration.num_chunks}
+          onChange={(e) => onConfigurationChange({ ...configuration, num_chunks: parseInt(e.target.value) })}
+          min={1}
+          max={10}
+          step={1}
+        />
       </div>
 
       <Button onClick={onSubmit} className="w-full">

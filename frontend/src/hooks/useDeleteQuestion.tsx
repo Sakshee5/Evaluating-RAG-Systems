@@ -18,7 +18,7 @@ export const useDeleteQuestion = (): UseDeleteQuestionReturn => {
     setError(null);
     
     try {
-      const response = await fetch(`http://localhost:8000/api/delete/question?questionId=${questionId}&session_id=${sessionId}`, {
+      const response = await fetch(`http://localhost:8000/api/delete/question?question_id=${questionId}&session_id=${sessionId}`, {
         method: 'DELETE',
       });
 

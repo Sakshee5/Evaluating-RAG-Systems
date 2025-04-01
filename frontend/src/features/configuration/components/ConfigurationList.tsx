@@ -28,17 +28,34 @@ export const ConfigurationList = ({ configurations, onDelete }: ConfigurationLis
             <div>
               <span className="font-medium">Chunking Strategy:</span> {config.chunking_strategy}
             </div>
-            <div>
-              <span className="font-medium">Chunk Size:</span> {config.chunk_size}
-            </div>
-            <div>
-              <span className="font-medium">Number of Chunks:</span> {config.num_chunks}
-            </div>
+            {config.chunking_strategy === "sentence" && (
+              <div>
+                <span className="font-medium">Sentences per Chunk:</span> {config.sentence_size}
+              </div>
+            )}
+            {config.chunking_strategy === "paragraph" && (
+              <div>
+                <span className="font-medium">Paragraphs per Chunk:</span> {config.paragraph_size}
+              </div>
+            )}
+            {config.chunking_strategy === "page" && (
+              <div>
+                <span className="font-medium">Pages per Chunk:</span> {config.page_size}
+              </div>
+            )}
+            {config.chunking_strategy === "tokens" && (
+              <div>
+                <span className="font-medium">Tokens per Chunk:</span> {config.token_size}
+              </div>
+            )}
             <div>
               <span className="font-medium">Embedding Model:</span> {config.embedding_model}
             </div>
             <div>
               <span className="font-medium">Similarity Metric:</span> {config.similarity_metric}
+            </div>
+            <div>
+              <span className="font-medium">Number of Chunks:</span> {config.num_chunks}
             </div>
           </div>
         </Card>

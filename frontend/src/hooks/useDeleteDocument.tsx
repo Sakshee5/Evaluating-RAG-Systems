@@ -18,7 +18,7 @@ export const useDeleteDocument = (): UseDeleteDocumentReturn => {
     setError(null);
     
     try {
-      const response = await fetch(`http://localhost:8000/api/delete/document?documentId=${documentId}&session_id=${sessionId}`, {
+      const response = await fetch(`http://localhost:8000/api/delete/document?document_id=${documentId}&session_id=${sessionId}`, {
         method: 'DELETE',
       });
 

@@ -17,7 +17,7 @@ export const useFetchSession = (initialSessionId?: string): { fetchSession: (ses
     setError(null);
     
     try {
-      const response = await fetch(`http://localhost:8000/api/get/session?sessionId=${sessionId}`);
+      const response = await fetch(`http://localhost:8000/api/get/session?session_id=${sessionId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch session data');
       }

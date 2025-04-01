@@ -6,6 +6,4 @@ export interface Document {
     file_size: number;
     file_extension: string;
     session_id: string;
-    created_at: string;
-    processed: boolean;
 }

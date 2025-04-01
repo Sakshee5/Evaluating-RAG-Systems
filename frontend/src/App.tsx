@@ -17,9 +17,12 @@ function App() {
   const [activeTab, setActiveTab] = useState("configuration")
   const [currentSession, setCurrentSession] = useState<string | null>(null)
   const [currentConfiguration, setCurrentConfiguration] = useState<Configuration>({
-    chunking_strategy: "fixed",
-    chunk_size: 500,
-    embedding_model: "text-embedding-ada-002",
+    chunking_strategy: "sentence",
+    sentence_size: 1,
+    paragraph_size: 1,
+    page_size: 1,
+    token_size: 1,
+    embedding_model: "sentence-transformer",
     similarity_metric: "cosine",
     num_chunks: 5
   })
@@ -76,14 +79,17 @@ function App() {
     if (!currentSession) return;
     
     try {
-      const savedConfig = await submitConfiguration(currentConfiguration, currentSession);
+      const savedConfig = await submitConfiguration(currentConfiguration, currentSession); 
       setConfigurations([...configurations, savedConfig]);
-      
+
       // Reset the form for a new configuration
       setCurrentConfiguration({
-        chunking_strategy: "fixed",
-        chunk_size: 500,
-        embedding_model: "text-embedding-ada-002",
+        chunking_strategy: "sentence",
+        sentence_size: 1,
+        paragraph_size: 1,
+        page_size: 1,
+        token_size: 1,
+        embedding_model: "sentence-transformer",
         similarity_metric: "cosine",
         num_chunks: 5
       });

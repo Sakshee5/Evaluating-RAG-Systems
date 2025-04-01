@@ -1,13 +1,5 @@
 import { useState } from 'react';
-
-interface Configuration {
-  id?: string;
-  chunking_strategy: string;
-  chunk_size: number;
-  embedding_model: string;
-  similarity_metric: string;
-  num_chunks: number;
-}
+import { Configuration } from '../models/configuration';
 
 interface UseSubmitConfigurationReturn {
   submitConfiguration: (configuration: Configuration, sessionId: string, onSuccess?: () => void) => Promise<Configuration>;
@@ -34,7 +26,10 @@ export const useSubmitConfiguration = (): UseSubmitConfigurationReturn => {
         body: JSON.stringify({
           session_id: sessionId,
           chunking_strategy: configuration.chunking_strategy,
-          chunk_size: configuration.chunk_size,
+          sentence_size: configuration.sentence_size,
+          paragraph_size: configuration.paragraph_size,
+          page_size: configuration.page_size,
+          token_size: configuration.token_size,
           embedding_model: configuration.embedding_model,
           similarity_metric: configuration.similarity_metric,
           num_chunks: configuration.num_chunks,

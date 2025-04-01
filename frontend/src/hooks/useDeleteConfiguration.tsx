@@ -18,7 +18,7 @@ export const useDeleteConfiguration = (): UseDeleteConfigurationReturn => {
     setError(null);
     
     try {
-      const response = await fetch(`http://localhost:8000/api/delete/configuration?configurationId=${configurationId}&sessionId=${sessionId}`, {
+      const response = await fetch(`http://localhost:8000/api/delete/configuration?configuration_id=${configurationId}&session_id=${sessionId}`, {
         method: 'DELETE'
       });
       
