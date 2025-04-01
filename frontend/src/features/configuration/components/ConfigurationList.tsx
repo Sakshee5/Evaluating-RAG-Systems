@@ -11,10 +11,10 @@ interface ConfigurationListProps {
 export const ConfigurationList = ({ configurations, onDelete }: ConfigurationListProps) => {
   return (
     <div className="space-y-4">
-      {configurations.map((config) => (
+      {configurations.map((config, index) => (
         <Card key={config.id} className="p-4">
           <div className="flex justify-between items-start mb-2">
-            <h3 className="font-bold text-lg">Configuration {config.id}</h3>
+            <h3 className="font-bold text-lg">Configuration {index + 1}</h3>
             <Button 
               variant="ghost" 
               size="sm" 

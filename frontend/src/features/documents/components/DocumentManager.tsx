@@ -144,7 +144,7 @@ export const DocumentManager = ({ sessionId, onDocumentsUpdated, onQuestionsUpda
             <div className="space-y-2">
               {questions.map((q) => (
                 <div key={q.id} className="flex items-center justify-between p-2 border rounded">
-                  <span>{q.text ?? ""}</span>
+                  <span>{q.question_string ?? ""}</span>
                   <Button
                     variant="ghost"
                     size="sm"
