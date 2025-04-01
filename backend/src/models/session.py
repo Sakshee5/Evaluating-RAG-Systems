@@ -1,10 +1,11 @@
-from typing import List
 from pydantic import BaseModel
-from datetime import datetime
+from typing import List, Optional
+from models.document import Document
+from models.question import Question
+from models.configuration import Configuration
 
 class Session(BaseModel):
-    id: str
-    created_at: datetime
-    documents: List[str]
-    questions: List[str]
-    configurations: List[str]  # each configuration will be applied to all documents and questions
+    id: Optional[str] = None
+    documents: List[Document] = []
+    questions: List[Question] = []
+    configurations: List[Configuration] = []

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 interface UseDeleteQuestionReturn {
-  deleteQuestion: (id: string) => Promise<void>;
+  deleteQuestion: (questionId: string, sessionId: string) => Promise<void>;
   isLoading: boolean;
   error: Error | null;
 }
@@ -10,14 +10,15 @@ export const useDeleteQuestion = (): UseDeleteQuestionReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const deleteQuestion = async (id: string): Promise<void> => {
-    if (!id) throw new Error('Question ID is required');
+  const deleteQuestion = async (questionId: string, sessionId: string): Promise<void> => {
+    if (!questionId) throw new Error('Question ID is required');
+    if (!sessionId) throw new Error('Session ID is required');
     
     setIsLoading(true);
     setError(null);
     
     try {
-      const response = await fetch(`http://localhost:8000/api/question/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/delete/question?questionId=${questionId}&session_id=${sessionId}`, {
         method: 'DELETE',
       });
 

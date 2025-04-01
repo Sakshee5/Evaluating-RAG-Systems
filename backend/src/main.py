@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from models.session import Session
 from models.configuration import Configuration
@@ -6,8 +6,16 @@ from models.document import Document
 from models.question import Question
 from fastapi import UploadFile, File, Form
 import uuid
-from datetime import datetime
-from typing import List
+import os
+from pydantic import BaseModel
+
+
+# if the data/documents folder doesn't exist, create it
+if not os.path.exists("data"):
+    os.makedirs("data")
+
+if not os.path.exists("data/documents"):
+    os.makedirs("data/documents")
 
 app = FastAPI(root_path='/api')
 
@@ -16,6 +24,9 @@ origins = [
     "http://localhost:5173",
     "http://vcm-45508.vm.duke.edu",
     "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:5176",
+    "http://localhost:5177",
     "http://localhost:8080",
     "http://localhost"
 ]
@@ -32,79 +43,163 @@ app.add_middleware(
 async def root():
     return {"message": "Hello world!"}
 
-@app.post("/session")
-async def create_session(session: Session):
-    # Generate a unique ID for the session
-    session.id = str(uuid.uuid4())
-    session.created_at = datetime.utcnow()
-    session.documents = []
-    session.questions = []
-    session.configurations = []
+@app.post("/create/session")
+async def create_session():
+    try:
+        session = Session()
+        session.id = str(uuid.uuid4())
+        session.documents = []
+        session.questions = []
+        session.configurations = []
+        
+        # Ensure the data directory exists
+        if not os.path.exists("data"):
+            os.makedirs("data")
+            
+        with open(f"data/session_{session.id}.json", "a") as f:
+            f.write(session.model_dump_json(indent=4))
+        
+        return session
+    except Exception as e:
+        # Log the error
+        print(f"Error creating session: {str(e)}")
+        # Return a more helpful error response
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+
+@app.post("/upload/document")
+async def upload_document(file: UploadFile = File(...), session_id: str = Form(...)):
+
+    # save the file to the data/documents folder if it doesn't exist
+    if not os.path.exists(f"data/documents/{file.filename}"):
+        with open(f"data/documents/{file.filename}", "wb") as f:
+            f.write(await file.read())
+
+    # Create a new Document object
+    document = Document(
+        id=str(uuid.uuid4()),
+        file_name=file.filename,
+        file_path=f"data/documents/{file.filename}",
+        file_type=file.content_type, 
+        file_size=file.size,
+        file_extension=file.filename.split(".")[-1],
+        session_id=session_id,
+    ) 
+
+    with open(f"data/session_{session_id}.json", "r") as f:
+        session = Session.model_validate_json(f.read())
+        session.documents.append(document)
+
+    with open(f"data/session_{session_id}.json", "w") as f:
+        f.write(session.model_dump_json(indent=4))
+
+    return document
+
+
+# Create a model for the incoming JSON data
+class QuestionCreate(BaseModel):
+    question_string: str
+    session_id: str
+
+@app.post("/create/question")
+async def create_question(question_data: QuestionCreate):
+    # Create a new Question object
+    question = Question(
+        id=str(uuid.uuid4()),
+        question_string=question_data.question_string,
+        session_id=question_data.session_id,
+    )
     
-    # Here you would typically save the session to a database
-    # For now, we'll just return the created session
-    return session
+    # Save the question to the session
+    with open(f"data/session_{question_data.session_id}.json", "r") as f:
+        session = Session.model_validate_json(f.read())
+        session.questions.append(question)
 
-@app.get("/configurations/{sessionId}")
-async def get_configurations(sessionId: str):
-   
-   # TODO: get configurations from database. Setting default values for now.
-   configs = Configuration(
-      id = "1",
-      name = "Default Configuration",
-      session_id = sessionId,
-      created_at = datetime.utcnow(),
-      chunking_strategy = "fixed",
-      chunk_size = 1024,
-      embedding_model = "text-embedding-ada-002",
-      similarity_metric = "cosine",
-      num_chunks = 5
+    with open(f"data/session_{question_data.session_id}.json", "w") as f:
+        f.write(session.model_dump_json(indent=4))
 
-   )
+    return question
 
-   return [configs]
 
-@app.post("/configuration")
-async def create_configuration(configuration: Configuration):
+class ConfigurationCreate(BaseModel):
+    session_id: str 
+    chunking_strategy: str
+    chunk_size: int
+    embedding_model: str
+    similarity_metric: str
+    num_chunks: int
+
+@app.post("/create/configuration")
+async def create_configuration(configuration_data: ConfigurationCreate):
     
-    # TODO: save configuration to database
+    configuration = Configuration()
+    configuration.id = str(uuid.uuid4())
+    configuration.chunking_strategy = configuration_data.chunking_strategy
+    configuration.chunk_size = configuration_data.chunk_size
+    configuration.embedding_model = configuration_data.embedding_model
+    configuration.similarity_metric = configuration_data.similarity_metric
+    configuration.num_chunks = configuration_data.num_chunks
+
+    with open(f"data/session_{configuration_data.session_id}.json", "r") as f:
+        session = Session.model_validate_json(f.read())
+        session.configurations.append(configuration)
+
+    with open(f"data/session_{configuration_data.session_id}.json", "w") as f:
+        f.write(session.model_dump_json(indent=4))
+
     return configuration
 
-@app.delete("/configuration/{configurationId}")
-async def delete_configuration(configurationId: str):
-    # TODO: delete configuration from database
-    return {"message": "Configuration deleted!"}
+@app.delete("/delete/document")
+async def delete_document(documentId: str, session_id: str):
+    
+    with open(f"data/session_{session_id}.json", "r") as f:
+        session = Session.model_validate_json(f.read())
+        session.documents = [doc for doc in session.documents if doc.id != documentId]
 
+    with open(f"data/session_{session_id}.json", "w") as f:
+        f.write(session.model_dump_json(indent=4))
 
-@app.post("/document/upload")
-async def upload_document(file: UploadFile = File(...), session_id: str = Form(...)):
-    # TODO: save document to database
-    return {"message": "Document uploaded!"}
-
-
-@app.delete("/document/{documentId}")
-async def delete_document(documentId: str):
-    # TODO: delete document from database
     return {"message": "Document deleted!"}
 
 
-@app.post("/question")
-async def create_question(question: Question):
-    # TODO: save question to database
-    return question
+@app.delete("/delete/question")
+async def delete_question(questionId: str, session_id: str):
 
-@app.delete("/question/{questionId}")
-async def delete_question(questionId: str):
-    # TODO: delete question from database
+    with open(f"data/session_{session_id}.json", "r") as f:
+        session = Session.model_validate_json(f.read())
+        session.questions = [q for q in session.questions if q.id != questionId]
+
+    with open(f"data/session_{session_id}.json", "w") as f:
+        f.write(session.model_dump_json(indent=4))
+
     return {"message": "Question deleted!"}
 
 
-@app.get("/documents/{sessionId}")
-async def get_documents(sessionId: str):
-    # TODO: get documents from database
-    return []
+@app.delete("/delete/configuration")
+async def delete_configuration(configurationId: str, sessionId: str):
+    
+    with open(f"data/session_{sessionId}.json", "r") as f:
+        session = Session.model_validate_json(f.read())
+    
+        # remove the configuration from the session
+        session.configurations = [config for config in session.configurations if config.id != configurationId]
 
-@app.get("/questions/{sessionId}")
-async def get_questions(sessionId: str):
-    # TODO: get questions from database
-    return []
+    with open(f"data/session_{sessionId}.json", "w") as f:
+        f.write(session.model_dump_json(indent=4))
+
+    return {"message": "Configuration deleted!"}
+
+
+@app.get("/get/session")
+async def get_session(sessionId: str):
+    """For evaluating the session"""
+
+    with open(f"data/session_{sessionId}.json", "r") as f:
+        session = Session.model_validate_json(f.read())
+        return session
+    
+@app.post("/evaluate")
+async def evaluate(query_llm: str, judge_llm: str):
+    """For evaluating the session"""
+
+    return {"message": "Session evaluated!"}

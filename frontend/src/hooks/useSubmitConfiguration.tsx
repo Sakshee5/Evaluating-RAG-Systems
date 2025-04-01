@@ -2,9 +2,6 @@ import { useState } from 'react';
 
 interface Configuration {
   id?: string;
-  name?: string;
-  session_id?: string;
-  created_at?: string;
   chunking_strategy: string;
   chunk_size: number;
   embedding_model: string;
@@ -29,20 +26,19 @@ export const useSubmitConfiguration = (): UseSubmitConfigurationReturn => {
     setError(null);
     
     try {
-      const configToSave = {
-        id: crypto.randomUUID(),
-        name: configuration.name || `Configuration ${new Date().toLocaleTimeString()}`,
-        session_id: sessionId,
-        created_at: new Date().toISOString(),
-        ...configuration
-      };
-      
-      const response = await fetch('http://localhost:8000/api/configuration', {
+      const response = await fetch('http://localhost:8000/api/create/configuration', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(configToSave),
+        body: JSON.stringify({
+          session_id: sessionId,
+          chunking_strategy: configuration.chunking_strategy,
+          chunk_size: configuration.chunk_size,
+          embedding_model: configuration.embedding_model,
+          similarity_metric: configuration.similarity_metric,
+          num_chunks: configuration.num_chunks,
+        }),
       });
       
       if (!response.ok) {

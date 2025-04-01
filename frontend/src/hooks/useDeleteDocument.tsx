@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 interface UseDeleteDocumentReturn {
-  deleteDocument: (id: string) => Promise<void>;
+  deleteDocument: (documentId: string, sessionId: string) => Promise<void>;
   isLoading: boolean;
   error: Error | null;
 }
@@ -10,14 +10,15 @@ export const useDeleteDocument = (): UseDeleteDocumentReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const deleteDocument = async (id: string): Promise<void> => {
-    if (!id) throw new Error('Document ID is required');
+  const deleteDocument = async (documentId: string, sessionId: string): Promise<void> => {
+    if (!documentId) throw new Error('Document ID is required');
+    if (!sessionId) throw new Error('Session ID is required');
     
     setIsLoading(true);
     setError(null);
     
     try {
-      const response = await fetch(`http://localhost:8000/api/document/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/delete/document?documentId=${documentId}&session_id=${sessionId}`, {
         method: 'DELETE',
       });
 

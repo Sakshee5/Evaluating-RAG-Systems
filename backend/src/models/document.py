@@ -3,15 +3,13 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class Document(BaseModel):
-    id: str
-    file_name: str
-    file_path: str
-    file_type: str
-    file_size: int
-    file_extension: str
-    session_id: str
-    created_at: datetime
-    processed: bool = False
+    id: Optional[str]
+    file_name: Optional[str]
+    file_path: Optional[str]
+    file_type: Optional[str]
+    file_size: Optional[int]
+    file_extension: Optional[str]
+    session_id: Optional[str]
     chunk_size: Optional[int] = None
     chunking_strategy: Optional[str] = None
     embedding_model: Optional[str] = None

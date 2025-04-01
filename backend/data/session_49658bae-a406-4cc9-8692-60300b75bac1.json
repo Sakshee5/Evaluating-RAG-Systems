@@ -1,0 +1,37 @@
+{
+    "id": "49658bae-a406-4cc9-8692-60300b75bac1",
+    "documents": [
+        {
+            "id": "e1944bf9-bb6c-4d80-9ce5-5af64d9144e0",
+            "file_name": "W5.txt",
+            "file_path": "data/documents/W5.txt",
+            "file_type": "text/plain",
+            "file_size": 10154,
+            "file_extension": "txt",
+            "session_id": "49658bae-a406-4cc9-8692-60300b75bac1",
+            "chunk_size": null,
+            "chunking_strategy": null,
+            "embedding_model": null,
+            "embeddings_file": null,
+            "similarity_metric": null
+        }
+    ],
+    "questions": [
+        {
+            "id": "790f86da-a63d-4cef-be86-1807d6635016",
+            "question_string": "hi",
+            "session_id": "49658bae-a406-4cc9-8692-60300b75bac1"
+        }
+    ],
+    "configurations": [
+        {
+            "id": "c9cbfd52-24d8-4cfc-8f49-3476c40199bb",
+            "session_id": null,
+            "chunking_strategy": "fixed",
+            "chunk_size": 500,
+            "embedding_model": "text-embedding-ada-002",
+            "similarity_metric": "cosine",
+            "num_chunks": 5
+        }
+    ]
+}

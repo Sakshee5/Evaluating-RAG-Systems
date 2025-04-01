@@ -19,16 +19,14 @@ export const useAddQuestion = (): UseAddQuestionReturn => {
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8000/api/question', {
+      const response = await fetch('http://localhost:8000/api/create/question', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: crypto.randomUUID(),
-          text,
+          question_string: text,
           session_id: sessionId,
-          created_at: new Date().toISOString(),
         }),
       });
 

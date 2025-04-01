@@ -23,7 +23,7 @@ export const useDocumentUpload = (): UseDocumentUploadReturn => {
       formData.append('file', file);
       formData.append('session_id', sessionId);
 
-      const response = await fetch('http://localhost:8000/api/document/upload', {
+      const response = await fetch('http://localhost:8000/api/upload/document', {
         method: 'POST',
         body: formData,
       });
