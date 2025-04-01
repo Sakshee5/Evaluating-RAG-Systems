@@ -1,0 +1,606 @@
+Modeling Process &
+Algorithms
+Week 5
+
+Kaggle competition
+
+Our task is to build a model to predict which previous patrons will
+purchase a subscription to the 2014-15 concert season
+
+Data
+•
+
+We are given a subset of patrons along with a 0/1 label indicating whether they
+purchased a 2014-15 season subscription (train.csv)
+
+•
+
+We are given a test set containing accounts to generate predictions (test.csv)
+
+•
+
+We are also given several other datafiles:
+–
+
+Account.csv: location info for each patron and donation history
+
+–
+
+Tickets_all.csv: previously purchased tickets by account - season, location, set, price
+level, # seats
+
+–
+
+Subscriptions.csv: previously purchased subscriptions by account – season, location,
+price level, # seats
+
+–
+
+Concerts.csv: previous concerts by season – title, composer, location
+
+–
+
+Concerts_2014-15.csv: list of planned 2014-15 sets
+
+–
+
+zipcodes.csv: information about zip codes
+
+Approach
+•
+
+Determine possible features
+
+•
+
+Create a data pipeline to build features (both train and test)
+
+•
+
+–
+
+Clean data
+
+–
+
+Generate features
+
+–
+
+Prepare data for modeling
+
+Perform modeling
+–
+
+Feature engineering & selection
+
+–
+
+Evaluate algorithms
+
+–
+
+Tune hyperparameters
+
+–
+
+Possibly create ensembles
+
+Validation approach
+
+Rules
+•
+
+No collaboration (not even whiteboard-level)
+
+•
+
+All code and writing must be your own
+
+•
+
+Instructor and TA cannot answer any questions or help with anything
+other than clarifying what to submit
+
+Scoring
+•
+
+We will use AUROC to score your probabilistic predictions
+–
+
+Kaggle will automatically calculate it for you when you upload your predictions
+
+•
+
+Test set is divided into public and private test sets
+
+•
+
+Public leaderboard will show your performance on the public test set
+
+•
+
+Your final leaderboard position will depend on the private test set
+–
+
+•
+
+This prevents any attempt to “game the system”
+
+Your grade will be calculated based on an average of your public test
+set and private test set performance
+
+Scoring
+•
+
+Your grade will depend on three parts:
+– Your average score on the public and private test sets (70 points)
+– Your code hygiene (10 points)
+• All submission code must be in python scripts (no notebooks)
+• Code should be organized (functions & classes), no loose code
+• Code should be easy to follow and reasonably documented (docstrings for
+functions and classes)
+
+– Your writeup of your modeling process (20 points)
+• README doc describing your data pipeline and modeling approach
+• Must be understandable and sufficiently detailed
+
+Scoring
+AUROC threshold
+> 0.53
+> 0.8
+> 0.9
+> 0.94
+> 0.96
+> 0.97
+
+•
+
+Grade
+40/70
+50/70
+55/70
+60/70
+65/70
+70/70
+
++5 points bonus for Top 3 finishers on private set
+
+K Nearest Neighbors
+
+K Nearest Neighbors
+•
+
+One very simple way we can
+predict the class of a new
+datapoint is by assigning it the
+same class as the closest training
+point (nearest neighbor)
+
+•
+
+A more robust method would be
+to take the majority vote over the
+k nearest points (“K Nearest
+Neighbors”)
+
+•
+
+K is a hyperparameter we can set
+
+x2
+
+k=1
+
+x1
+
+K Nearest Neighbors
+•
+
+One very simple way we can
+predict the class of a new
+datapoint is by assigning it the
+same class as the closest training
+point (nearest neighbor)
+
+•
+
+A more robust method would be
+to take the majority vote over the
+k nearest points (“K Nearest
+Neighbors”)
+
+•
+
+K is a hyperparameter we can set
+
+x2
+
+k=3
+
+x1
+
+K Nearest Neighbors
+•
+
+We have a few important choices to make
+– The number and selection of dimensions
+– The distance/similarity function (e.g. Euclidian distance, cosine similarity etc)
+– The choice of k
+
+K Nearest Neighbors
+•
+
+KNN can perform better than other algorithms (e.g. logistic regression)
+when the relationship is highly non-linear
+
+•
+
+While it often performs decently, it is rarely the “best” and is easy to
+overfit using a small value for k
+
+•
+
+It is also computationally/memory intensive
+
+Nearest Neighbor Search
+While KNN is not commonly used for prediction, we often use nearest
+neighbor search:
+
+Support Vector Machines
+
+Support Vector Machines
+•
+
+SVM is an algorithm that can be
+used for both regression and
+classification
+
+•
+
+We more often find it in use for
+classification problems
+
+•
+
+Historically it has been one of
+the most popular algorithms,
+but more recently has been
+largely replaced by neural
+networks
+Image source: https://www.classcentral.com/course/supportvector-machines-scikit-learn-19237
+
+History
+•
+
+Pre 1980:
+– Almost all statistical learning methods learned linear decision boundaries
+– Theoretically nice but not powerful on real-world problems
+
+• 1980s
+– Decision trees and neural networks enabled efficient learning of non-linear
+decision boundaries
+– However, they lacked a strong theoretical foundation and suffered from
+overfitting (local minima)
+
+• 1990s
+– Developed efficient learning methods for non-linear functions with stronger
+generalization capabilities and strong theoretical foundation
+
+Innovations of SVM
+•
+
+Use of non-linear transformations (“kernel functions”) to separate nonlinear regions
+
+•
+
+Formulation of a convex optimization problem to avoid the local
+minima issues with neural networks
+
+•
+
+Net result: allowed us to efficiently model non-linear relationships and
+highly complex feature sets e.g. basic computer vision
+
+Support Vector Classifiers
+•
+
+Suppose we have two classes and our goal is to draw a line
+to separate them
+
+•
+
+But there are often many possible lines we can draw to
+separate them – which one should we choose?
+
+Support Vector Classifiers
+•
+•
+•
+
+One option is to choose the one that separates the classes by the
+widest margin
+We draw a margin from our line to the nearest point of each class
+The line with the largest margin is selected as the optimal model
+
+What are support vectors?
+•
+
+The points which touch the
+margin are called the “support
+vectors”
+
+•
+
+They are the most difficult points
+to classify
+
+•
+
+Only the support vectors
+influence the fit of the model
+
+•
+
+Points further out from the
+margin do not make a difference,
+because they do not contribute
+to the cost function
+
+What are support vectors?
+•
+•
+
+Even though we have a different number of points, in both cases the
+same 3 points determine the margin
+Thus, the model is exactly the same in both cases
+
+Building the SVC model
+•
+
+x2
+
+H1
+H0
+
+Class 1:
+y = +1
+
+H2
+
+Class 2:
+y = -1
+
+x1
+
+How to calculate the margin?
+•
+
+The distance from a point (xo,yo) to a line Ax + By + c = 0 is:
+
+•
+
+Therefore, the distance between H0 and H1 is:
+
+•
+
+So the total distance between H1 and H2 is:
+
+Building the SVC model
+•
+
+x2
+
+Class 1:
+y = +1
+
+Class 2:
+y = -1
+
+x1
+
+Building the SVC model
+Now we have a constrained optimization
+problem:
+
+This is a convex constrained optimization
+problem, meaning there is a single global
+minimum that we can find
+When we solve for the optimal w that satisfies the
+constraint, we have the coefficients of our
+decision boundary and can use it for predictions
+
+Soft Margin SVC
+What if the data is not perfectly
+separable by a line?
+•
+
+We allow some misclassification or
+points within the margins
+
+•
+
+We seek the best balance between a
+wide separation margin and a low
+total misclassification error on the
+training set
+
+Which decision boundary is more
+likely to generalize better – A or B?
+
+x2
+
+Decision
+boundary A
+
+Decision
+boundary B
+Class 1:
+y = +1
+
+Class 2:
+y = -1
+
+x1
+
+Soft margin SVC
+•
+
+Soft margin SVC
+Small C
+
+Large C
+
+Objective
+
+Maximize margin
+
+Minimize
+misclassification of
+training datapoints
+
+Risk
+
+Underfitting
+(misclassifies much of
+the training data)
+Less sensitive
+
+Overfitting (fits well on
+training data but does
+not generalize)
+Very sensitive
+
+Outliers
+
+Soft Margin SVC
+This balance in SKLearn is controlled by a hyperparameter C:
+•
+
+Think of 1/C as a “budget” for # of training points we are willing to misclassify
+
+•
+
+Large C: smaller margin but less misclassification in training set (more complex)
+
+•
+
+Small C: wider margin but higher misclassification error in training (less complex)
+
+Nonlinear SVC
+•
+
+Similar to what we did in Polynomial Regression, we can use the
+“kernel trick” to map data into a higher-dimensional space where they
+are linearly separable
+
+•
+
+Polynomial kernel applies a polynomial transformation of degree n
+Polynomial kernel
+
+Image source: https://towardsdatascience.com/svm-kernels-what-do-they-actually-do-56ce36f4f7b8
+
+Polynomial kernels
+
+Image source: https://people.eecs.berkeley.edu/~jrs/189/lec/04.pdf
+
+Polynomial kernels
+
+Image source: https://people.eecs.berkeley.edu/~jrs/189/lec/04.pdf
+
+Radial basis function kernel
+•
+
+We can choose a “landmark” and create a feature representing each
+point’s distance from the landmark
+RBF kernel
+
+Image source: https://web.mit.edu/6.034/wwwbob/svm.pdf
+
+SVC in Scikit Learn
+•
+
+Standardize/scale data first!
+
+•
+
+Instantiate a SVC instance
+
+•
+
+–
+
+Select kernel
+
+–
+
+Select degree (if polynomial kernel)
+
+–
+
+Set value for C (balance between
+wide margin and misclassification
+for training data)
+
+Can select kernel and C value
+through cross-validation
+
+Linear kernel:
+
+Polynomial kernel:
+
+Radial basis function kernel:
+
+Platt Scaling
+•
+
+One significant disadvantage of SVCs is that they only produce discrete
+class predictions
+
+•
+
+We can get probabilistic predictions using Platt Scaling
+–
+
+Fit a logistic regression model using the SVC function predictions as input
+
+–
+
+We add coefficients A and B which are learned
+
+SVC pros and cons
+Advantages
+•
+
+•
+•
+
+Highly flexible due to kernel
+choices and regularization
+hyperparameter (C)
+Work well in high-dimensional
+spaces (computer vision, text)
+Convex optimization problem –
+efficient solving methods
+
+Disadvantages
+•
+
+•
+•
+
+Often outperformed by other
+models (random forests or
+neural networks)
+Difficult to train on large
+datasets (with kernel)
+No inherent probabilistic output
+– created via post-processing
+
+SVMs generally work well on “short and fat” datasets
+
+PRACTICE: SUPPORT VECTOR
+CLASSIFIER
+
+
