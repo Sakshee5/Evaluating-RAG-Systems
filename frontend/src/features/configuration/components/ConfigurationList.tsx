@@ -10,21 +10,21 @@ interface ConfigurationListProps {
 
 export const ConfigurationList = ({ configurations, onDelete }: ConfigurationListProps) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 text-left">
       {configurations.map((config, index) => (
-        <Card key={config.id} className="p-4">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="font-bold text-lg">Configuration {index + 1}</h3>
+        <Card key={config.id} className="p-2">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="font-bold text-base">Configuration {index + 1}</h3>
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={() => config.id && onDelete(config.id)}
               className="text-red-500 hover:text-red-700"
             >
-              <Trash2 size={16} />
+              <Trash2 size={14} />
             </Button>
           </div>
-          <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
+          <div className="flex flex-col space-y-1 text-sm">
             <div>
               <span className="font-medium">Chunking Strategy:</span> {config.chunking_strategy}
             </div>
@@ -61,8 +61,8 @@ export const ConfigurationList = ({ configurations, onDelete }: ConfigurationLis
         </Card>
       ))}
       {configurations.length === 0 && (
-        <p className="text-gray-500 italic">No configurations saved</p>
+        <p className="text-gray-500 italic text-center">No configurations saved</p>
       )}
     </div>
   );
-}; 
+};
