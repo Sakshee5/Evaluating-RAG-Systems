@@ -1,0 +1,35 @@
+{
+    "id": "8852dca2-2e3b-4523-9b2a-0085a8647e7a",
+    "documents": [
+        {
+            "id": "3dd751c2-b7b5-460b-a8bc-4a8daaf2fcf6",
+            "file_name": "factor-trait-report_sakshee-patil.pdf",
+            "file_path": "data/documents/factor-trait-report_sakshee-patil.pdf",
+            "file_type": "application/pdf",
+            "file_size": 88333,
+            "file_extension": "pdf",
+            "session_id": "8852dca2-2e3b-4523-9b2a-0085a8647e7a"
+        }
+    ],
+    "questions": [
+        {
+            "id": "0cf5d8b3-4d87-4eef-8bda-7096c0fec5b4",
+            "question_string": "what are sakshees traits",
+            "session_id": "8852dca2-2e3b-4523-9b2a-0085a8647e7a"
+        }
+    ],
+    "configurations": [
+        {
+            "id": "f71e601a-5f50-45d9-afa8-8ff811ce6ef7",
+            "session_id": null,
+            "chunking_strategy": "page",
+            "token_size": 1,
+            "sentence_size": 1,
+            "paragraph_size": 1,
+            "page_size": 1,
+            "embedding_model": "sentence-transformer",
+            "similarity_metric": "cosine",
+            "num_chunks": 5
+        }
+    ]
+}

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 
 class Chunk(BaseModel):
     chunk_number: int
@@ -11,6 +11,6 @@ class LLMResponse(BaseModel):
     question: str
     answer: str
     chunks: List[Chunk]
-    visualization_plot_path: Optional[str] = None
+    visualization_plot: str
 
     

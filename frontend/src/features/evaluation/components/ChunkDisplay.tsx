@@ -1,5 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ChunkDisplayProps {
   chunk: {
@@ -16,7 +22,16 @@ export const ChunkDisplay = ({ chunk }: ChunkDisplayProps) => {
       <CardContent className="pt-6">
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <span className="font-medium">Chunk #{chunk.chunk_number}</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="font-medium cursor-help">Chunk #{chunk.chunk_number}</span>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-[500px]">
+                  <p className="text-sm">{chunk.text}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <div className="flex gap-4">
               <div>
                 <span className="text-sm text-muted-foreground">Relevance:</span>
@@ -28,7 +43,6 @@ export const ChunkDisplay = ({ chunk }: ChunkDisplayProps) => {
               </div>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">{chunk.text}</p>
         </div>
       </CardContent>
     </Card>

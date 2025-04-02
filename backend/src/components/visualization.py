@@ -36,11 +36,16 @@ def plot_embeddings_multi(embeddings_2d, top_chunk_indices, title, x_axis_label,
     plt.legend()
     plt.grid()
 
-    # Save the plot as a base64 image
+    # Save the plot as a base64 string
     img_io = io.BytesIO()
-    # plt.savefig(img_io, format='png', bbox_inches='tight', dpi=100)
+    plt.savefig(img_io, format='png', bbox_inches='tight', dpi=100)
+    plt.close()  # Close the plot to free memory
 
-    return img_io
+    # Encode image as base64
+    img_io.seek(0)
+    img_base64 = base64.b64encode(img_io.read()).decode('utf-8')
+
+    return img_base64
 
 def PCA_visualization(chunks_embs, query_emb, response_emb, top_indices):
     pca = PCA(n_components=2)

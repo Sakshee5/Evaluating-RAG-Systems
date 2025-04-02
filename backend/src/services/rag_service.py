@@ -152,11 +152,11 @@ class RAGService:
             try:
                 # Generate visualization plot
                 response_embedding = EmbeddingGenerator.get_embeddings([answer["answer"]], configuration.embedding_model)[0]
-                visualization_plot = PCA_visualization(processed_document.embeddings, query_embedding, response_embedding, [chunk["chunk_number"] - 1 for chunk in relevance_analysis])
+                img_base64 = PCA_visualization(processed_document.embeddings, query_embedding, response_embedding, [chunk["chunk_number"] - 1 for chunk in relevance_analysis])
 
-                # Save visualization plot to data/plots with unique filename
-                plot_filename = f"data/plots/plot_{uuid.uuid4()}.png"
-                plt.savefig(plot_filename, format='png', bbox_inches='tight', dpi=100)
+                # # Save visualization plot to data/plots with unique filename
+                # plot_filename = f"data/plots/plot_{uuid.uuid4()}.png"
+                # plt.savefig(plot_filename, format='png', bbox_inches='tight', dpi=100)
 
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Visualization plot saving server error: {str(e)}")
@@ -166,7 +166,7 @@ class RAGService:
                         question=question.question_string,
                         answer=answer["answer"],
                         chunks=chunks_data,
-                        visualization_plot_path=plot_filename
+                        visualization_plot=img_base64
                     )
 
                     all_responses.append(llm_response)

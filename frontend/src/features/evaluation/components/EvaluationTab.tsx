@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectTrigger, SelectValue, SelectItem, SelectContent} from "@/components/ui/select";
@@ -20,15 +20,23 @@ export const EvaluationTab = ({ sessionId }: EvaluationTabProps) => {
 
   const { results, isLoading, error, fetchRagResults } = useRagResults();
 
+  const showQueryApiKey = useMemo(() => {
+    return queryLLM.includes("gpt") || queryLLM.includes("gemini");
+  }, [queryLLM]);
+
+  const showJudgeApiKey = useMemo(() => {
+    return (judgeLLM.includes("gpt") || judgeLLM.includes("gemini")) && judgeLLM !== queryLLM;
+  }, [judgeLLM, queryLLM]);
+
   const handleRunRag = async () => {
-    if (!queryLLM || !queryApiKey) {
+    if (!queryLLM || (showQueryApiKey && !queryApiKey)) {
       return;
     }
     await fetchRagResults(queryLLM, queryApiKey, sessionId);
   };
 
   const handleEvaluate = async () => {
-    if (!judgeLLM || !judgeApiKey) {
+    if (!judgeLLM || (showJudgeApiKey && !judgeApiKey)) {
       return;
     }
     // TODO: Implement judge evaluation
@@ -53,12 +61,14 @@ export const EvaluationTab = ({ sessionId }: EvaluationTabProps) => {
                 <SelectItem value="gpt-4o-mini">GPT-4o-mini</SelectItem>
               </SelectContent>
             </Select>
-            <Input 
-              type="password" 
-              placeholder="API Key" 
-              value={queryApiKey}
-              onChange={(e) => setQueryApiKey(e.target.value)}
-            /> 
+            {showQueryApiKey && (
+              <Input 
+                type="password" 
+                placeholder={`${queryLLM.includes("gpt") ? "OpenAI" : "Google"} API Key`}
+                value={queryApiKey}
+                onChange={(e) => setQueryApiKey(e.target.value)}
+              /> 
+            )}
           </div>
         </div>
 
@@ -74,12 +84,14 @@ export const EvaluationTab = ({ sessionId }: EvaluationTabProps) => {
                 <SelectItem value="gpt-4o-mini">GPT-4o-mini</SelectItem>
               </SelectContent>
             </Select>
-            <Input 
-              type="password" 
-              placeholder="API Key" 
-              value={judgeApiKey}
-              onChange={(e) => setJudgeApiKey(e.target.value)}
-            /> 
+            {showJudgeApiKey && (
+              <Input 
+                type="password" 
+                placeholder={`${judgeLLM.includes("gpt") ? "OpenAI" : "Google"} API Key`}
+                value={judgeApiKey}
+                onChange={(e) => setJudgeApiKey(e.target.value)}
+              /> 
+            )}
           </div>
         </div>
 

@@ -14,17 +14,17 @@ export const RagResultCard = ({ result }: RagResultCardProps) => {
         <CardTitle className="text-lg">Question: {result.question}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium mb-2">Answer:</h3>
-              <p className="text-muted-foreground">{result.answer}</p>
-            </div>
+        <div className="space-y-6">
+          <div>
+            <p className="text-muted-foreground">{result.answer}</p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
             <Accordion type="single" collapsible>
               <AccordionItem value="chunks">
                 <AccordionTrigger>View Chunks</AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-4">
+                  <div className="space-y-4" style={{ maxHeight: '264px', overflowY: 'auto' }}>
                     {result.chunks.map((chunk) => (
                       <ChunkDisplay key={chunk.chunk_number} chunk={chunk} />
                     ))}
@@ -32,18 +32,19 @@ export const RagResultCard = ({ result }: RagResultCardProps) => {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-          </div>
-          <div>
-            {result.visualization_plot_path && (
-              <div>
-                <h3 className="font-medium mb-2">Visualization:</h3>
-                <img 
-                  src={result.visualization_plot_path} 
-                  alt="RAG Visualization" 
-                  className="w-full rounded-lg border"
-                />
-              </div>
-            )}
+
+            <div>
+              {result.visualization_plot && (
+                <div>
+                  <h3 className="font-medium mb-2">Embedding Space Visualization</h3>
+                  <img 
+                    src={`data:image/png;base64,${result.visualization_plot}`}
+                    alt="RAG Visualization" 
+                    className="w-full rounded-lg border"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>

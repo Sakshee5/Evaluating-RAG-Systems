@@ -9,5 +9,5 @@ export interface LLMResponse {
   question: string;
   answer: string;
   chunks: Chunk[];
-  visualization_plot_path: string | null;
+  visualization_plot: string | null;
 } 
