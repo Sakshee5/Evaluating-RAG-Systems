@@ -8,24 +8,27 @@ import { useRagResults } from "../../../hooks/useRagResults";
 import { RagResultCard } from "./RagResultCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export const EvaluationTab = () => {
+interface EvaluationTabProps {
+  sessionId: string;
+}
+
+export const EvaluationTab = ({ sessionId }: EvaluationTabProps) => {
   const [queryLLM, setQueryLLM] = useState<string>("");
   const [queryApiKey, setQueryApiKey] = useState<string>("");
   const [judgeLLM, setJudgeLLM] = useState<string>("");
   const [judgeApiKey, setJudgeApiKey] = useState<string>("");
-  const [sessionId, setSessionId] = useState<string>("");
 
   const { results, isLoading, error, fetchRagResults } = useRagResults();
 
   const handleRunRag = async () => {
-    if (!queryLLM || !queryApiKey || !sessionId) {
+    if (!queryLLM || !queryApiKey) {
       return;
     }
     await fetchRagResults(queryLLM, queryApiKey, sessionId);
   };
 
   const handleEvaluate = async () => {
-    if (!judgeLLM || !judgeApiKey || !sessionId) {
+    if (!judgeLLM || !judgeApiKey) {
       return;
     }
     // TODO: Implement judge evaluation

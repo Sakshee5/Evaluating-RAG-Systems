@@ -20,11 +20,9 @@ class SessionService:
     @staticmethod
     def get_session(session_id: str) -> Session:
         """Get a session by ID"""
-        file_path = f"data/session_{session_id}.json"
-        print(f"Attempting to access: {os.path.abspath(file_path)}")
-        print(f"File exists: {os.path.exists(file_path)}")
-        try:
 
+        try:
+            file_path = f"data/session_{session_id}.json"
             # Check if file exists
             if not os.path.exists(file_path):
                 raise FileNotFoundError(f"Session file not found: {file_path}")
@@ -32,7 +30,7 @@ class SessionService:
             with open(file_path, "r") as f:
                 return Session.model_validate_json(f.read())
         except FileNotFoundError:
-            raise  # Re-raise FileNotFoundError directly
+            raise ValueError(f"Session file not found: {file_path}")
         except Exception as e:
             # Log the error or handle it appropriately
             raise ValueError(f"Failed to retrieve session {session_id}: {str(e)}")

@@ -32,6 +32,7 @@ function App() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [configurations, setConfigurations] = useState<Configuration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [sessionError, setSessionError] = useState(false);
   const sessionInitializedRef = useRef(false);
 
   // Using our custom hooks
@@ -49,12 +50,18 @@ function App() {
       setCurrentSession(sessionId);
       // Fetch session data
       fetchSession(sessionId).then(session => {
-        setDocuments(session.documents || []);
-        setQuestions(session.questions || []);
-        setConfigurations(session.configurations || []);
-        setIsLoading(false);
+        if (session) {
+          setDocuments(session.documents || []);
+          setQuestions(session.questions || []);
+          setConfigurations(session.configurations || []);
+          setIsLoading(false);
+        } else {
+          setSessionError(true);
+          setIsLoading(false);
+        }
       }).catch(error => {
         console.error('Error fetching session:', error);
+        setSessionError(true);
         setIsLoading(false);
       });
       sessionInitializedRef.current = true;
@@ -68,6 +75,7 @@ function App() {
       const sessionId = await startNewSession();
       setCurrentSession(sessionId);
       setActiveTab("configuration");
+      setSessionError(false);
       // Reset configurations fetch state
       sessionInitializedRef.current = true;
       // Reset state
@@ -76,11 +84,14 @@ function App() {
       setConfigurations([]);
       // Fetch session data
       const session = await fetchSession(sessionId);
-      setDocuments(session.documents || []);
-      setQuestions(session.questions || []);
-      setConfigurations(session.configurations || []);
+      if (session) {
+        setDocuments(session.documents || []);
+        setQuestions(session.questions || []);
+        setConfigurations(session.configurations || []);
+      }
     } catch (error) {
       console.error('Error starting new session:', error);
+      setSessionError(true);
     }
   };
 
@@ -127,9 +138,11 @@ function App() {
     if (currentSession) {
       // Fetch all data before switching to evaluation tab
       const session = await fetchSession(currentSession);
-      setDocuments(session.documents || []);
-      setQuestions(session.questions || []);
-      setConfigurations(session.configurations || []);
+      if (session) {
+        setDocuments(session.documents || []);
+        setQuestions(session.questions || []);
+        setConfigurations(session.configurations || []);
+      }
     }
     
     setActiveTab("evaluation");
@@ -145,7 +158,7 @@ function App() {
     );
   }
 
-  if (!currentSession) {
+  if (!currentSession || sessionError) {
     return (
       <AppLayout currentSession={currentSession} onStartNewSession={handleStartNewSession}>
         <Card className="max-w-md mx-auto mt-8">
@@ -184,10 +197,11 @@ function App() {
             onSubmit={handleConfigurationSubmit}
             onDelete={handleDeleteConfiguration}
             onEvaluate={handleEvaluate}
+            canProceedToEvaluation={documents.length > 0 && questions.length > 0 && configurations.length > 0}
           />
         </TabsContent>
         <TabsContent value="evaluation">
-          <EvaluationTab />
+          <EvaluationTab sessionId={currentSession} />
         </TabsContent>
       </Tabs>
     </AppLayout>

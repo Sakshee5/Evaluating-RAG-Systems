@@ -10,6 +10,7 @@ interface ConfigurationTabProps {
   onSubmit: () => void;
   onDelete: (id: string) => void;
   onEvaluate: () => void;
+  canProceedToEvaluation: boolean;
 }
 
 export const ConfigurationTab = ({
@@ -19,6 +20,7 @@ export const ConfigurationTab = ({
   onSubmit,
   onDelete,
   onEvaluate,
+  canProceedToEvaluation,
 }: ConfigurationTabProps) => {
   return (
     <div className="space-y-8">
@@ -44,7 +46,7 @@ export const ConfigurationTab = ({
       <div className="flex justify-end mt-4">
         <Button 
           onClick={onEvaluate}
-          disabled={configurations.length === 0}
+          disabled={!canProceedToEvaluation}
         >
           Proceed to Evaluation
         </Button>

@@ -10,6 +10,7 @@ from services.session_service import SessionService
 from models.llm_response import Chunk
 from components.visualization import PCA_visualization
 import uuid
+
 class RAGService:
     @staticmethod
     def create_embeddings(
