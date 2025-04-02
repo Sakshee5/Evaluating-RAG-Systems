@@ -12,6 +12,8 @@ import { AppLayout } from "@/components/layout/AppLayout"
 import { ConfigurationTab } from "@/features/configuration/components/ConfigurationTab"
 import { DocumentManager } from "@/features/documents/components/DocumentManager"
 import { EvaluationTab } from "@/features/evaluation/components/EvaluationTab"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 function App() {
   const [activeTab, setActiveTab] = useState("configuration")
@@ -29,6 +31,7 @@ function App() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [configurations, setConfigurations] = useState<Configuration[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const sessionInitializedRef = useRef(false);
 
   // Using our custom hooks
@@ -46,11 +49,17 @@ function App() {
       setCurrentSession(sessionId);
       // Fetch session data
       fetchSession(sessionId).then(session => {
-        setDocuments(session.documents);
-        setQuestions(session.questions);
-        setConfigurations(session.configurations);
+        setDocuments(session.documents || []);
+        setQuestions(session.questions || []);
+        setConfigurations(session.configurations || []);
+        setIsLoading(false);
+      }).catch(error => {
+        console.error('Error fetching session:', error);
+        setIsLoading(false);
       });
       sessionInitializedRef.current = true;
+    } else {
+      setIsLoading(false);
     }
   }, [fetchSession]);
 
@@ -67,9 +76,9 @@ function App() {
       setConfigurations([]);
       // Fetch session data
       const session = await fetchSession(sessionId);
-      setDocuments(session.documents);
-      setQuestions(session.questions);
-      setConfigurations(session.configurations);
+      setDocuments(session.documents || []);
+      setQuestions(session.questions || []);
+      setConfigurations(session.configurations || []);
     } catch (error) {
       console.error('Error starting new session:', error);
     }
@@ -110,53 +119,77 @@ function App() {
   };
 
   const handleEvaluate = async () => {
-    if (configurations.length === 0) {
-      alert("Please create at least one configuration before evaluating.");
+    if (configurations.length === 0 || documents.length === 0 || questions.length === 0) {
+      alert("Please add at least one document, one configuration, and one question before proceeding to evaluation.");
       return;
     }
     
     if (currentSession) {
       // Fetch all data before switching to evaluation tab
       const session = await fetchSession(currentSession);
-      setDocuments(session.documents);
-      setQuestions(session.questions);
-      setConfigurations(session.configurations);
+      setDocuments(session.documents || []);
+      setQuestions(session.questions || []);
+      setConfigurations(session.configurations || []);
     }
     
     setActiveTab("evaluation");
   };
 
+  if (isLoading) {
+    return (
+      <AppLayout currentSession={currentSession} onStartNewSession={handleStartNewSession}>
+        <div className="flex items-center justify-center h-full">
+          <p>Loading...</p>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (!currentSession) {
+    return (
+      <AppLayout currentSession={currentSession} onStartNewSession={handleStartNewSession}>
+        <Card className="max-w-md mx-auto mt-8">
+          <CardHeader>
+            <CardTitle>Welcome to RAG Evaluator</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">Start a new session to begin evaluating your RAG system.</p>
+            <Button onClick={handleStartNewSession}>Start New Session</Button>
+          </CardContent>
+        </Card>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout currentSession={currentSession} onStartNewSession={handleStartNewSession}>
-      {currentSession && (
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="configuration">Configuration Set Up</TabsTrigger>
-            <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
-          </TabsList>
-          <TabsContent value="configuration" className="space-y-8">
-            {/* Document and Questions Manager */}
-            <DocumentManager 
-              sessionId={currentSession} 
-              onDocumentsUpdated={setDocuments}
-              onQuestionsUpdated={setQuestions}
-            />
-            
-            {/* Configuration Section */}
-            <ConfigurationTab
-              currentConfiguration={currentConfiguration}
-              configurations={configurations}
-              onConfigurationChange={setCurrentConfiguration}
-              onSubmit={handleConfigurationSubmit}
-              onDelete={handleDeleteConfiguration}
-              onEvaluate={handleEvaluate}
-            />
-          </TabsContent>
-          <TabsContent value="evaluation">
-            <EvaluationTab />
-          </TabsContent>
-        </Tabs>
-      )}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="configuration">Configuration Set Up</TabsTrigger>
+          <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
+        </TabsList>
+        <TabsContent value="configuration" className="space-y-8">
+          {/* Document and Questions Manager */}
+          <DocumentManager 
+            sessionId={currentSession} 
+            onDocumentsUpdated={setDocuments}
+            onQuestionsUpdated={setQuestions}
+          />
+          
+          {/* Configuration Section */}
+          <ConfigurationTab
+            currentConfiguration={currentConfiguration}
+            configurations={configurations}
+            onConfigurationChange={setCurrentConfiguration}
+            onSubmit={handleConfigurationSubmit}
+            onDelete={handleDeleteConfiguration}
+            onEvaluate={handleEvaluate}
+          />
+        </TabsContent>
+        <TabsContent value="evaluation">
+          <EvaluationTab />
+        </TabsContent>
+      </Tabs>
     </AppLayout>
   );
 }

@@ -10,6 +10,7 @@ import { useDeleteDocument } from "@/hooks/useDeleteDocument"
 import { useAddQuestion } from "@/hooks/useAddQuestion"
 import { useDeleteQuestion } from "@/hooks/useDeleteQuestion"
 import { useState } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface DocumentManagerProps {
   sessionId: string;
@@ -22,6 +23,7 @@ export const DocumentManager = ({ sessionId, onDocumentsUpdated, onQuestionsUpda
   const [questions, setQuestions] = useState<Question[]>([]);
   const [newQuestion, setNewQuestion] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { uploadDocument } = useDocumentUpload();
   const { deleteDocument } = useDeleteDocument();
@@ -32,6 +34,13 @@ export const DocumentManager = ({ sessionId, onDocumentsUpdated, onQuestionsUpda
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Check if file is PDF
+    if (file.type !== 'application/pdf') {
+      setError('Only PDF files are allowed');
+      return;
+    }
+
+    setError(null);
     setIsUploading(true);
     try {
       const newDoc = await uploadDocument(file, sessionId);
@@ -39,6 +48,7 @@ export const DocumentManager = ({ sessionId, onDocumentsUpdated, onQuestionsUpda
       onDocumentsUpdated([...documents, newDoc]);
     } catch (error) {
       console.error('Error uploading document:', error);
+      setError('Failed to upload document. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -52,6 +62,7 @@ export const DocumentManager = ({ sessionId, onDocumentsUpdated, onQuestionsUpda
       onDocumentsUpdated(updatedDocs);
     } catch (error) {
       console.error('Error deleting document:', error);
+      setError('Failed to delete document. Please try again.');
     }
   };
 
@@ -65,6 +76,7 @@ export const DocumentManager = ({ sessionId, onDocumentsUpdated, onQuestionsUpda
       setNewQuestion("");
     } catch (error) {
       console.error('Error adding question:', error);
+      setError('Failed to add question. Please try again.');
     }
   };
 
@@ -76,6 +88,7 @@ export const DocumentManager = ({ sessionId, onDocumentsUpdated, onQuestionsUpda
       onQuestionsUpdated(updatedQuestions);
     } catch (error) {
       console.error('Error deleting question:', error);
+      setError('Failed to delete question. Please try again.');
     }
   };
 
@@ -92,18 +105,24 @@ export const DocumentManager = ({ sessionId, onDocumentsUpdated, onQuestionsUpda
                 <Button variant="outline" asChild>
                   <div>
                     <Upload className="mr-2 h-4 w-4" />
-                    Upload Document
+                    Upload PDF Document
                   </div>
                 </Button>
                 <input
                   id="file-upload"
                   type="file"
+                  accept=".pdf"
                   className="hidden"
                   onChange={handleFileUpload}
                   disabled={isUploading}
                 />
               </Label>
             </div>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-2">
               {documents.map((doc) => (
                 <div key={doc.id} className="flex items-center justify-between p-2 border rounded">
