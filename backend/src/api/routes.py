@@ -6,6 +6,7 @@ from services.document_service import DocumentService
 from services.rag_service import RAGService
 from services.question_service import QuestionService
 from services.configuration_service import ConfigurationService
+from services.judge_service import JudgeService
 
 router = APIRouter()
 
@@ -120,6 +121,6 @@ async def run_rag(run_rag_data: RunRAG):
 @router.post("/run/judge")
 async def run_judge(run_judge_data: RunJudge):
     try:
-        return await RAGService.run_judge_pipeline(run_judge_data.judge_llm, run_judge_data.api_key, run_judge_data.session_id)
+        return await JudgeService.run_judge_pipeline(run_judge_data.judge_llm, run_judge_data.api_key, run_judge_data.session_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}") 
