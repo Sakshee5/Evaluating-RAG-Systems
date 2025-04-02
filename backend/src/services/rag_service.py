@@ -10,6 +10,8 @@ from services.session_service import SessionService
 from models.llm_response import Chunk
 from components.visualization import PCA_visualization
 import uuid
+from fastapi import HTTPException
+import matplotlib.pyplot as plt
 
 class RAGService:
     @staticmethod
@@ -47,52 +49,65 @@ class RAGService:
     ) -> List[LLMResponse]:
         """Run the complete RAG pipeline"""
         # Get session data
-        session = SessionService.get_session(session_id)
-        configurations = session.configurations
-        documents = session.documents
-        questions = session.questions
+        try:
+            session = SessionService.get_session(session_id)
+            configurations = session.configurations
+            documents = session.documents
+            questions = session.questions
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
         all_responses = []
 
         for configuration in configurations:
-            for document in documents:
-                # Process document
-                full_text, pages = DocumentService.process_document(document.file_path)
-                chunks, embeddings = RAGService.create_embeddings(
-                    full_text,
-                    pages,
-                    configuration.chunking_strategy,
-                    configuration.token_size,
-                    configuration.sentence_size,
-                    configuration.paragraph_size,
-                    configuration.page_size,
-                    configuration.embedding_model
-                )
+            try:
+                for document in documents:
+                    # Process document
+                    full_text, pages = DocumentService.process_document(document.file_path)
+                    chunks, embeddings = RAGService.create_embeddings(
+                        full_text,
+                        pages,
+                        configuration.chunking_strategy,
+                        configuration.token_size,
+                        configuration.sentence_size,
+                        configuration.paragraph_size,
+                        configuration.page_size,
+                        configuration.embedding_model
+                    )
 
-                processed_document = ProcessedDocument(
-                    id=document.id,
-                    file_name=document.file_name,
-                    full_text=full_text,
-                    pages=pages,
-                    chunks=chunks,
-                    embeddings=embeddings,
-                    chunking_strategy=configuration.chunking_strategy,
-                    token_size=configuration.token_size,
-                    sentence_size=configuration.sentence_size,
-                    paragraph_size=configuration.paragraph_size,
-                    page_size=configuration.page_size,
-                )
+                    processed_document = ProcessedDocument(
+                        id=document.id,
+                        file_name=document.file_name,
+                        full_text=full_text,
+                        pages=pages,
+                        chunks=chunks,
+                        embeddings=embeddings,
+                        chunking_strategy=configuration.chunking_strategy,
+                        token_size=configuration.token_size,
+                        sentence_size=configuration.sentence_size,
+                        paragraph_size=configuration.paragraph_size,
+                        page_size=configuration.page_size,
+                        embedding_model=configuration.embedding_model,
+                    )
 
-                # Save processed document
-                with open(f"data/processed_documents_{session_id}.json", "a") as f:
-                    f.write(processed_document.model_dump_json(indent=4))
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
+            # Save processed document
+            with open(f"data/processed_documents.json", "a") as f:
+                f.write(processed_document.model_dump_json(indent=4))
+
+            try:
                 # Process each question
                 for question in questions:
                     query = question.question_string
                     query_embedding = EmbeddingGenerator.get_embeddings([query], configuration.embedding_model)[0]
 
-                    # Calculate similarities and get top chunks
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Embedding generation server error: {str(e)}")
+            
+            try:
+                # Calculate similarities and get top chunks
                     similarity_scores = SimilarityCalculator.get_similarity_scores(
                         query_embedding,
                         processed_document.embeddings,
@@ -105,7 +120,11 @@ class RAGService:
                         k=configuration.num_chunks
                     )
 
-                    # Format context and generate response
+            except Exception as e:  
+                raise HTTPException(status_code=500, detail=f"Similarity calculation server error: {str(e)}")
+
+            try:
+                # Format context and generate response
                     top_chunk_texts = [(chunk, chunk_number) for chunk_number, (chunk, _) in top_chunks]
                     context = format_context_for_llm(top_chunk_texts)
 
@@ -127,15 +146,22 @@ class RAGService:
                             )
                         )
 
-                    # Generate visualization plot
-                    visualization_plot = PCA_visualization(processed_document.embeddings, query_embedding, answer["answer"], [chunk["chunk_number"] - 1 for chunk in relevance_analysis])
+            except Exception as e:  
+                raise HTTPException(status_code=500, detail=f"LLM response generation server error: {str(e)}")
 
-                    # Save visualization plot to data/plots with unique filename
-                    plot_filename = f"data/plots/plot_{uuid.uuid4()}.png"
-                    with open(plot_filename, "wb") as f:
-                        f.write(visualization_plot.encode("utf-8"))
+            try:
+                # Generate visualization plot
+                response_embedding = EmbeddingGenerator.get_embeddings([answer["answer"]], configuration.embedding_model)[0]
+                visualization_plot = PCA_visualization(processed_document.embeddings, query_embedding, response_embedding, [chunk["chunk_number"] - 1 for chunk in relevance_analysis])
 
-                    
+                # Save visualization plot to data/plots with unique filename
+                plot_filename = f"data/plots/plot_{uuid.uuid4()}.png"
+                plt.savefig(plot_filename, format='png', bbox_inches='tight', dpi=100)
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Visualization plot saving server error: {str(e)}")
+
+            try:
                     llm_response = LLMResponse(
                         question=question.question_string,
                         answer=answer["answer"],
@@ -148,6 +174,9 @@ class RAGService:
                     # Save response
                     with open(f"data/llm_responses_{session_id}.json", "a") as f:
                         f.write(llm_response.model_dump_json(indent=4))
+
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"LLM response saving server error: {str(e)}")
 
         return all_responses
 

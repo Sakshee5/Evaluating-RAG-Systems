@@ -14,4 +14,3 @@ class ProcessedDocument(BaseModel):
     paragraph_size: Optional[int]
     page_size: Optional[int]
     embedding_model: Optional[str]
-    similarity_metric: Optional[str]

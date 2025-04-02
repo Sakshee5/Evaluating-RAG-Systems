@@ -23,13 +23,14 @@ export const useRagResults = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch RAG results');
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.detail || `Failed to fetch RAG results: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
       setResults(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'An error occurred while processing your request');
     } finally {
       setIsLoading(false);
     }
