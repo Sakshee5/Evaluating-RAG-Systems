@@ -35,7 +35,7 @@ export const ChunkDisplay = ({ chunk }: ChunkDisplayProps) => {
             <div className="flex gap-4">
               <div>
                 <span className="text-sm text-muted-foreground">Relevance:</span>
-                <Progress value={chunk.relevance_score * 100} className="w-24" />
+                <Progress value={chunk.relevance_score} className="w-24" />
               </div>
               <div>
                 <span className="text-sm text-muted-foreground">Similarity:</span>

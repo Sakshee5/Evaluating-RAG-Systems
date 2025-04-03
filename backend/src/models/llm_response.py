@@ -12,5 +12,4 @@ class LLMResponse(BaseModel):
     answer: str
     chunks: List[Chunk]
     visualization_plot: str
-
     

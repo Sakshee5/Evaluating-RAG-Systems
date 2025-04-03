@@ -9,9 +9,9 @@ from services.document_service import DocumentService
 from services.session_service import SessionService
 from models.llm_response import Chunk
 from components.visualization import PCA_visualization
-import uuid
 from fastapi import HTTPException
-import matplotlib.pyplot as plt
+import json
+import os
 
 class RAGService:
     @staticmethod
@@ -56,44 +56,82 @@ class RAGService:
             questions = session.questions
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+        
+        processed_doc_path = "data/processed_documents.json"
+
+        # Load existing processed documents
+        if os.path.exists(processed_doc_path):
+            with open(processed_doc_path, "r", encoding="utf-8") as f:
+                try:
+                    processed_documents = json.load(f)
+                    if not isinstance(processed_documents, list):
+                        processed_documents = []  # Reset if not a list
+                except json.JSONDecodeError:
+                    processed_documents = []  # Reset on JSON error
+        else:
+            processed_documents = []
 
         for configuration in configurations:
             try:
                 for document in documents:
-                    # Process document
-                    full_text, pages = DocumentService.process_document(document.file_path)
-                    chunks, embeddings = RAGService.create_embeddings(
-                        full_text,
-                        pages,
-                        configuration.chunking_strategy,
-                        configuration.token_size,
-                        configuration.sentence_size,
-                        configuration.paragraph_size,
-                        configuration.page_size,
-                        configuration.embedding_model
+                    # Check if the document is already processed with the same configuration
+                    matched_document = next(
+                        (
+                            pd for pd in processed_documents
+                            if pd["file_name"] == document.file_name
+                            and pd["chunking_strategy"] == configuration.chunking_strategy
+                            and pd["embedding_model"] == configuration.embedding_model
+                            and pd["token_size"] == configuration.token_size
+                            and pd["sentence_size"] == configuration.sentence_size
+                            and pd["paragraph_size"] == configuration.paragraph_size
+                            and pd["page_size"] == configuration.page_size
+                        ),
+                        None
                     )
 
-                    processed_document = ProcessedDocument(
-                        id=document.id,
-                        file_name=document.file_name,
-                        full_text=full_text,
-                        pages=pages,
-                        chunks=chunks,
-                        embeddings=embeddings,
-                        chunking_strategy=configuration.chunking_strategy,
-                        token_size=configuration.token_size,
-                        sentence_size=configuration.sentence_size,
-                        paragraph_size=configuration.paragraph_size,
-                        page_size=configuration.page_size,
-                        embedding_model=configuration.embedding_model,
-                    )
+                    if matched_document:
+                        processed_document = ProcessedDocument(**matched_document)
+
+                        print("Document already processed with the same configuration")
+
+                    else:
+                        # Process document
+                        full_text, pages = DocumentService.process_document(document.file_path)
+                        chunks, embeddings = RAGService.create_embeddings(
+                            full_text,
+                            pages,
+                            configuration.chunking_strategy,
+                            configuration.token_size,
+                            configuration.sentence_size,
+                            configuration.paragraph_size,
+                            configuration.page_size,
+                            configuration.embedding_model
+                        )
+
+                        processed_document = ProcessedDocument(
+                            id=document.id,
+                            file_name=document.file_name,
+                            full_text=full_text,
+                            pages=pages,
+                            chunks=chunks,
+                            embeddings=embeddings,
+                            chunking_strategy=configuration.chunking_strategy,
+                            token_size=configuration.token_size,
+                            sentence_size=configuration.sentence_size,
+                            paragraph_size=configuration.paragraph_size,
+                            page_size=configuration.page_size,
+                            embedding_model=configuration.embedding_model,
+                        )
+
+                        # Append the new processed document
+                        processed_documents.append(processed_document.model_dump())
+
+                        # Save back as a valid JSON array
+                        with open(processed_doc_path, "w", encoding="utf-8") as f:
+                            json.dump(processed_documents, f, indent=4)
 
             except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
-
-            # Save processed document
-            with open(f"data/processed_documents.json", "a", encoding="utf-8") as f:
-                f.write(processed_document.model_dump_json(indent=4))
+                raise HTTPException(status_code=500, detail=f"Error processing document: {str(e)}")
 
             try:
                 # Process each question
