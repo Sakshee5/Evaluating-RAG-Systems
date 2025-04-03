@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectTrigger, SelectValue, SelectItem, SelectContent} from "@/components/ui/select";
@@ -9,7 +9,6 @@ import { useJudge } from "../../../hooks/useJudge";
 import { RagResultCard } from "./RagResultCard";
 import { JudgeResultCard } from "./JudgeResultCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { LLMResponse } from "../../../models/llm_response";
 
 interface EvaluationTabProps {
   sessionId: string;
@@ -21,7 +20,7 @@ export const EvaluationTab = ({ sessionId }: EvaluationTabProps) => {
   const [judgeLLM, setJudgeLLM] = useState<string>("");
   const [judgeApiKey, setJudgeApiKey] = useState<string>("");
 
-  const { results, isLoading: isRagLoading, error: ragError, fetchRagResults } = useRagResults();
+  const { results, configurations, isLoading: isRagLoading, error: ragError, fetchRagResults } = useRagResults();
   const { judgeResult, isLoading: isJudgeLoading, error: judgeError, evaluateResults } = useJudge();
 
   const showQueryApiKey = useMemo(() => {
@@ -127,7 +126,12 @@ export const EvaluationTab = ({ sessionId }: EvaluationTabProps) => {
             <h2 className="text-xl font-semibold mb-4">RAG Results</h2>
             <div className="space-y-6">
               {results.map((result, index) => (
-                <RagResultCard key={index} result={result} />
+                <RagResultCard 
+                  key={index} 
+                  result={result} 
+                  configurations={configurations}
+                  configIndex={index % configurations.length}
+                />
               ))}
             </div>
           </div>

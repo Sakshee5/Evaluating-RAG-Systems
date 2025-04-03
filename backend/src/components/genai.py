@@ -91,8 +91,8 @@ Based purely on the above context, respond with a valid JSON object containing:
    - "relevance_score": percentage (0-100) of relevance
 
 Ensure:
-- Sum of relevance scores of all chunks should be 100%
-- Unused chunks can have 0% relevance and if only one chunk is used, it should have 100% relevance
+- Sum of relevance scores of all chunks should be 100%.
+- Unused chunks can have 0% relevance and if only one chunk is used, it should have 100% relevance.  Even if 0% relevance, include all chunks in json response.
 - The response must be a VALID JSON object without additional text
 
 JSON RESPONSE FORMAT:

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { LLMResponse } from '../features/evaluation/types';
+import { Configuration } from '../models/configuration';
 
 export const useRagResults = () => {
   const [results, setResults] = useState<LLMResponse[]>([]);
+  const [configurations, setConfigurations] = useState<Configuration[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +30,8 @@ export const useRagResults = () => {
       }
 
       const data = await response.json();
-      setResults(data);
+      setResults(data.answers || []);
+      setConfigurations(data.configurations || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while processing your request');
     } finally {
@@ -38,6 +41,7 @@ export const useRagResults = () => {
 
   return {
     results,
+    configurations,
     isLoading,
     error,
     fetchRagResults,

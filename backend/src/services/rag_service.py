@@ -46,7 +46,7 @@ class RAGService:
         query_llm: str,
         api_key: str,
         session_id: str
-    ) -> List[LLMResponse]:
+    ) -> Dict[str, Any]:
         """Run the complete RAG pipeline"""
         # Get session data
         try:
@@ -215,4 +215,4 @@ class RAGService:
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"LLM response saving server error: {str(e)}")
 
-        return session.answers
+        return session.model_dump()
