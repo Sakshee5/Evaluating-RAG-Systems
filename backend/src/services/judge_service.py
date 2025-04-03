@@ -2,7 +2,7 @@ import json
 from typing import Dict, Any
 from services.session_service import SessionService
 from models.llm_response import LLMResponse
-from components.utils import generate_judge_gemini_response, generate_judge_openai_response
+from components.genai import generate_judge_gemini_response, generate_judge_openai_response
 
 class JudgeService:
     @staticmethod

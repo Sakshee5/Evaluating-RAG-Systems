@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectTrigger, SelectValue, SelectItem, SelectContent} from "@/components/ui/select";
@@ -9,6 +9,7 @@ import { useJudge } from "../../../hooks/useJudge";
 import { RagResultCard } from "./RagResultCard";
 import { JudgeResultCard } from "./JudgeResultCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LLMResponse } from "../../../models/llm_response";
 
 interface EvaluationTabProps {
   sessionId: string;

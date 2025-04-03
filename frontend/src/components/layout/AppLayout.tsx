@@ -26,18 +26,24 @@ export const AppLayout = ({ currentSession, onStartNewSession, children }: AppLa
       </div>
       <div className="min-h-screen p-8 pb-8 sm:p-8">      
         <main className="max-w-4xl mx-auto flex flex-col gap-8">
-          <div>
-            <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-              Making RAG Retrieval Transparent & Explainable
-            </h1>
-            <p className="leading-7 [&:not(:first-child)]:mt-6 mb-6">
-            How do you know if your RAG pipeline is truly optimized? Is getting the right answer enough?
-            </p>
-            <p className="leading-7 [&:not(:first-child)]:mt-6 mb-6">
-            RAG Analyzer helps you compare different configurations to see what your model retrieves vs. what it should retrieve. Moreover, it not only helps you identify misalignments between similarity scores of retrieved chunks and actual relevance, but also helps identify the best configuration for your RAG pipeline.
-            </p>
-            {children}
-          </div>
+          {currentSession ? (
+            <>
+              <div>
+                <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+                  Making RAG Retrieval Transparent & Explainable
+                </h1>
+                <p className="leading-7 [&:not(:first-child)]:mt-6 mb-6">
+                  How do you know if your RAG pipeline is truly optimized? Is getting the right answer enough?
+                </p>
+                <p className="leading-7 [&:not(:first-child)]:mt-6 mb-6">
+                  RAG Analyzer helps you compare different configurations to see what your model retrieves vs. what it should retrieve. Moreover, it not only helps you identify misalignments between similarity scores of retrieved chunks and actual relevance, but also helps identify the best configuration for your RAG pipeline.
+                </p>
+              </div>
+              {children}
+            </>
+          ) : (
+            children
+          )}
         </main>
       </div>
     </div>

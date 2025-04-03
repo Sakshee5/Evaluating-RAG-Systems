@@ -27,7 +27,7 @@ class SessionService:
             if not os.path.exists(file_path):
                 raise FileNotFoundError(f"Session file not found: {file_path}")
                 
-            with open(file_path, "r") as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 return Session.model_validate_json(f.read())
         except FileNotFoundError:
             raise ValueError(f"Session file not found: {file_path}")

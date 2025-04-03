@@ -10,9 +10,6 @@ if not os.path.exists("data"):
 if not os.path.exists("data/documents"):
     os.makedirs("data/documents")
 
-if not os.path.exists("data/plots"):
-    os.makedirs("data/plots")
-
 app = FastAPI(root_path='/api')
 
 # List of allowed origins

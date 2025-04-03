@@ -4,7 +4,7 @@ from models.llm_response import LLMResponse
 from components.chunking import chunk_by_sentence, chunk_by_paragraph, chunk_by_page, chunk_by_tokens
 from components.embedding import EmbeddingGenerator
 from components.similarity_metrics import SimilarityCalculator
-from components.utils import generate_gemini_response, generate_openai_response, format_context_for_llm
+from components.genai import generate_gemini_response, generate_openai_response, format_context_for_llm
 from services.document_service import DocumentService
 from services.session_service import SessionService
 from models.llm_response import Chunk
@@ -51,6 +51,11 @@ class RAGService:
         # Get session data
         try:
             session = SessionService.get_session(session_id)
+
+            # if session contains answers, delete them
+            if session.answers:
+                session.answers = []
+
             configurations = session.configurations
             documents = session.documents
             questions = session.questions
@@ -189,10 +194,6 @@ class RAGService:
                 # Generate visualization plot
                 response_embedding = EmbeddingGenerator.get_embeddings([answer["answer"]], configuration.embedding_model)[0]
                 img_base64 = PCA_visualization(processed_document.embeddings, query_embedding, response_embedding, [chunk["chunk_number"] - 1 for chunk in relevance_analysis])
-
-                # # Save visualization plot to data/plots with unique filename
-                # plot_filename = f"data/plots/plot_{uuid.uuid4()}.png"
-                # plt.savefig(plot_filename, format='png', bbox_inches='tight', dpi=100)
 
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Visualization plot saving server error: {str(e)}")

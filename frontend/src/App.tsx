@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Configuration } from "@/models/configuration"
 import { Document } from "@/models/document"
 import { Question } from "@/models/question"
+import { LLMResponse } from "@/models/llm_response"
 import { useStartNewSession } from "@/hooks/useStartNewSession"
 import { useSubmitConfiguration } from "@/hooks/useSubmitConfiguration"
 import { useDeleteConfiguration } from "@/hooks/useDeleteConfiguration"
@@ -31,6 +32,7 @@ function App() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [configurations, setConfigurations] = useState<Configuration[]>([]);
+  const [ragResults, setRagResults] = useState<LLMResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sessionError, setSessionError] = useState(false);
   const sessionInitializedRef = useRef(false);
@@ -54,13 +56,20 @@ function App() {
           setDocuments(session.documents || []);
           setQuestions(session.questions || []);
           setConfigurations(session.configurations || []);
+          setRagResults(session.answers || []);
           setIsLoading(false);
         } else {
+          // If session not found, clear localStorage and reset state
+          localStorage.removeItem('currentSessionId');
+          setCurrentSession(null);
           setSessionError(true);
           setIsLoading(false);
         }
       }).catch(error => {
         console.error('Error fetching session:', error);
+        // On error, clear localStorage and reset state
+        localStorage.removeItem('currentSessionId');
+        setCurrentSession(null);
         setSessionError(true);
         setIsLoading(false);
       });
@@ -82,16 +91,19 @@ function App() {
       setDocuments([]);
       setQuestions([]);
       setConfigurations([]);
+      setRagResults([]);
       // Fetch session data
       const session = await fetchSession(sessionId);
       if (session) {
         setDocuments(session.documents || []);
         setQuestions(session.questions || []);
         setConfigurations(session.configurations || []);
+        setRagResults(session.answers || []);
       }
     } catch (error) {
       console.error('Error starting new session:', error);
       setSessionError(true);
+      setCurrentSession(null);
     }
   };
 
@@ -142,6 +154,7 @@ function App() {
         setDocuments(session.documents || []);
         setQuestions(session.questions || []);
         setConfigurations(session.configurations || []);
+        setRagResults(session.answers || []);
       }
     }
     
@@ -150,7 +163,7 @@ function App() {
 
   if (isLoading) {
     return (
-      <AppLayout currentSession={currentSession} onStartNewSession={handleStartNewSession}>
+      <AppLayout currentSession={null} onStartNewSession={handleStartNewSession}>
         <div className="flex items-center justify-center h-full">
           <p>Loading...</p>
         </div>
@@ -160,7 +173,7 @@ function App() {
 
   if (!currentSession || sessionError) {
     return (
-      <AppLayout currentSession={currentSession} onStartNewSession={handleStartNewSession}>
+      <AppLayout currentSession={null} onStartNewSession={handleStartNewSession}>
         <Card className="max-w-md mx-auto mt-8">
           <CardHeader>
             <CardTitle>Welcome to RAG Evaluator</CardTitle>
