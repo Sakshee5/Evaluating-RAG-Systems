@@ -6,4 +6,8 @@
 - if file available, pre-fill the documents, questions and configurations on the UI based on the retrieved session
 
 - implement caching when the document is already processed
-- forget evaluate results for now! can do judge stuff when i get sometime
+
+
+- display config while displaying answers/qs
+- relevance % seems to be 100%. fix bars
+- judge llm data input seems to be getting duplicated

@@ -57,8 +57,6 @@ class RAGService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
-        all_responses = []
-
         for configuration in configurations:
             try:
                 for document in documents:
@@ -94,7 +92,7 @@ class RAGService:
                 raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
             # Save processed document
-            with open(f"data/processed_documents.json", "a") as f:
+            with open(f"data/processed_documents.json", "a", encoding="utf-8") as f:
                 f.write(processed_document.model_dump_json(indent=4))
 
             try:
@@ -169,13 +167,13 @@ class RAGService:
                         visualization_plot=img_base64
                     )
 
-                    all_responses.append(llm_response)
-
-                    # Save response
-                    with open(f"data/llm_responses_{session_id}.json", "a") as f:
-                        f.write(llm_response.model_dump_json(indent=4))
+                    # save to session
+                    session.answers.append(llm_response)
+                    with open(f"data/session_{session_id}.json", "w", encoding="utf-8") as f:
+                        f.write(session.model_dump_json(indent=4))
+                    
 
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"LLM response saving server error: {str(e)}")
 
-        return all_responses
+        return session.answers

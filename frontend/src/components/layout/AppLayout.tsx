@@ -31,7 +31,10 @@ export const AppLayout = ({ currentSession, onStartNewSession, children }: AppLa
               Making RAG Retrieval Transparent & Explainable
             </h1>
             <p className="leading-7 [&:not(:first-child)]:mt-6 mb-6">
-              How to decide whether your RAG pipeline is truly optimized? RAG analyzer helps you visually analyze chunking strategies and embedding models to understand how well your system retrieves relevant information. Compare different methods and gain insights into which configuration works best for your data!
+            How do you know if your RAG pipeline is truly optimized? Is getting the right answer enough?
+            </p>
+            <p className="leading-7 [&:not(:first-child)]:mt-6 mb-6">
+            RAG Analyzer helps you compare different configurations to see what your model retrieves vs. what it should retrieve. Moreover, it not only helps you identify misalignments between similarity scores of retrieved chunks and actual relevance, but also helps identify the best configuration for your RAG pipeline.
             </p>
             {children}
           </div>

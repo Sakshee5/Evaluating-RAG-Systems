@@ -5,7 +5,9 @@ import { Select, SelectTrigger, SelectValue, SelectItem, SelectContent} from "@/
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useRagResults } from "../../../hooks/useRagResults";
+import { useJudge } from "../../../hooks/useJudge";
 import { RagResultCard } from "./RagResultCard";
+import { JudgeResultCard } from "./JudgeResultCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EvaluationTabProps {
@@ -18,7 +20,8 @@ export const EvaluationTab = ({ sessionId }: EvaluationTabProps) => {
   const [judgeLLM, setJudgeLLM] = useState<string>("");
   const [judgeApiKey, setJudgeApiKey] = useState<string>("");
 
-  const { results, isLoading, error, fetchRagResults } = useRagResults();
+  const { results, isLoading: isRagLoading, error: ragError, fetchRagResults } = useRagResults();
+  const { judgeResult, isLoading: isJudgeLoading, error: judgeError, evaluateResults } = useJudge();
 
   const showQueryApiKey = useMemo(() => {
     return queryLLM.includes("gpt") || queryLLM.includes("gemini");
@@ -39,8 +42,8 @@ export const EvaluationTab = ({ sessionId }: EvaluationTabProps) => {
     if (!judgeLLM || (showJudgeApiKey && !judgeApiKey)) {
       return;
     }
-    // TODO: Implement judge evaluation
-    console.log("Evaluating with:", judgeLLM);
+    const apiKeyToUse = judgeLLM === queryLLM ? queryApiKey : judgeApiKey;
+    await evaluateResults(judgeLLM, apiKeyToUse, sessionId);
   };
 
   return (
@@ -98,19 +101,23 @@ export const EvaluationTab = ({ sessionId }: EvaluationTabProps) => {
         <div className="h-6"></div>
 
         <div className="flex gap-4">
-          <Button onClick={handleRunRag} disabled={isLoading}>
-            {isLoading ? "Running RAG..." : "Run RAG"}
+          <Button onClick={handleRunRag} disabled={isRagLoading}>
+            {isRagLoading ? "Running RAG..." : "Run RAG"}
           </Button>
           {results.length > 0 && (
-            <Button onClick={handleEvaluate} variant="secondary">
-              Evaluate Results
+            <Button 
+              onClick={handleEvaluate} 
+              variant="secondary"
+              disabled={isJudgeLoading}
+            >
+              {isJudgeLoading ? "Evaluating..." : "Evaluate Results"}
             </Button>
           )}
         </div>
 
-        {error && (
+        {(ragError || judgeError) && (
           <Alert variant="destructive" className="mt-4">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{ragError || judgeError}</AlertDescription>
           </Alert>
         )}
 
@@ -123,6 +130,13 @@ export const EvaluationTab = ({ sessionId }: EvaluationTabProps) => {
               ))}
             </div>
           </div>
+        )}
+
+        {judgeResult && (
+          <JudgeResultCard 
+            recommendation={judgeResult.recommendation}
+            analysis={judgeResult.analysis}
+          />
         )}
       </CardContent>
     </Card>
