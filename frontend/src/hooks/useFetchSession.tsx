@@ -10,7 +10,7 @@ export const useFetchSession = (initialSessionId?: string): { fetchSession: (ses
     if (!sessionId) throw new Error('Session ID is required');
     
     // Prevent duplicate fetches for the same session
-    if (isLoading || lastFetchedSessionRef.current === sessionId) return { documents: [], questions: [], configurations: [] };
+    if (isLoading || lastFetchedSessionRef.current === sessionId) return { documents: [], questions: [], configurations: [], answers: [] };
     
     lastFetchedSessionRef.current = sessionId;
     setIsLoading(true);
@@ -27,7 +27,8 @@ export const useFetchSession = (initialSessionId?: string): { fetchSession: (ses
       return {
         documents: sessionData.documents || [],
         questions: sessionData.questions || [],
-        configurations: sessionData.configurations || []
+        configurations: sessionData.configurations || [],
+        answers: sessionData.answers || []
       };
     } catch (error) {
       console.error('Error fetching session data:', error);

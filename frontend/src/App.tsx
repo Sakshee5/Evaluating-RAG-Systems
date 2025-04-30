@@ -13,12 +13,10 @@ import { AppLayout } from "@/components/layout/AppLayout"
 import { ConfigurationTab } from "@/features/configuration/components/ConfigurationTab"
 import { DocumentManager } from "@/features/documents/components/DocumentManager"
 import { EvaluationTab } from "@/features/evaluation/components/EvaluationTab"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 function App() {
   const [activeTab, setActiveTab] = useState("configuration")
-  const [currentSession, setCurrentSession] = useState<string | null>(null)
+  const [currentSession, setCurrentSession] = useState<string>("")
   const [currentConfiguration, setCurrentConfiguration] = useState<Configuration>({
     chunking_strategy: "sentence",
     sentence_size: 1,
@@ -34,7 +32,7 @@ function App() {
   const [configurations, setConfigurations] = useState<Configuration[]>([]);
   const [ragResults, setRagResults] = useState<LLMResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [sessionError, setSessionError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const sessionInitializedRef = useRef(false);
 
   // Using our custom hooks
@@ -43,69 +41,61 @@ function App() {
   const { deleteConfiguration } = useDeleteConfiguration();
   const { fetchSession } = useFetchSession();
 
-  // Only run once when component mounts to get session from localStorage
+  // Initialize session on component mount
   useEffect(() => {
     if (sessionInitializedRef.current) return;
     
-    const sessionId = localStorage.getItem('currentSessionId')
-    if (sessionId) {
-      setCurrentSession(sessionId);
-      // Fetch session data
-      fetchSession(sessionId).then(session => {
-        if (session) {
-          setDocuments(session.documents || []);
-          setQuestions(session.questions || []);
-          setConfigurations(session.configurations || []);
-          setRagResults(session.answers || []);
-          setIsLoading(false);
-        } else {
-          // If session not found, clear localStorage and reset state
-          localStorage.removeItem('currentSessionId');
-          setCurrentSession(null);
-          setSessionError(true);
-          setIsLoading(false);
-        }
-      }).catch(error => {
-        console.error('Error fetching session:', error);
-        // On error, clear localStorage and reset state
-        localStorage.removeItem('currentSessionId');
-        setCurrentSession(null);
-        setSessionError(true);
-        setIsLoading(false);
-      });
-      sessionInitializedRef.current = true;
-    } else {
-      setIsLoading(false);
-    }
-  }, [fetchSession]);
+    const initializeSession = async () => {
+      try {
+        // Check if we already have a session ID in localStorage
+        const existingSessionId = localStorage.getItem('currentSessionId');
+        let sessionId: string;
 
-  const handleStartNewSession = async () => {
-    try {
-      const sessionId = await startNewSession();
-      setCurrentSession(sessionId);
-      setActiveTab("configuration");
-      setSessionError(false);
-      // Reset configurations fetch state
-      sessionInitializedRef.current = true;
-      // Reset state
-      setDocuments([]);
-      setQuestions([]);
-      setConfigurations([]);
-      setRagResults([]);
-      // Fetch session data
-      const session = await fetchSession(sessionId);
-      if (session) {
-        setDocuments(session.documents || []);
-        setQuestions(session.questions || []);
-        setConfigurations(session.configurations || []);
-        setRagResults(session.answers || []);
+        if (existingSessionId) {
+          // Try to fetch the existing session
+          try {
+            const session = await fetchSession(existingSessionId);
+            if (session) {
+              sessionId = existingSessionId;
+              setDocuments(session.documents || []);
+              setQuestions(session.questions || []);
+              setConfigurations(session.configurations || []);
+              setRagResults(session.answers || []);
+            } else {
+              // If session doesn't exist, create a new one
+              sessionId = await startNewSession();
+            }
+          } catch (error) {
+            // If there's an error fetching the session, create a new one
+            sessionId = await startNewSession();
+          }
+        } else {
+          // No existing session, create a new one
+          sessionId = await startNewSession();
+        }
+
+        setCurrentSession(sessionId);
+        setActiveTab("configuration");
+        setError(null);
+        
+        // Only reset state if we created a new session
+        if (!existingSessionId) {
+          setDocuments([]);
+          setQuestions([]);
+          setConfigurations([]);
+          setRagResults([]);
+        }
+      } catch (error) {
+        console.error('Error initializing session:', error);
+        setError('Failed to initialize session. Please try refreshing the page.');
+      } finally {
+        setIsLoading(false);
+        sessionInitializedRef.current = true;
       }
-    } catch (error) {
-      console.error('Error starting new session:', error);
-      setSessionError(true);
-      setCurrentSession(null);
-    }
-  };
+    };
+
+    initializeSession();
+  }, [startNewSession, fetchSession]);
 
   const handleConfigurationSubmit = async () => {
     if (!currentSession) return;
@@ -163,7 +153,7 @@ function App() {
 
   if (isLoading) {
     return (
-      <AppLayout currentSession={null} onStartNewSession={handleStartNewSession}>
+      <AppLayout currentSession="">
         <div className="flex items-center justify-center h-full">
           <p>Loading...</p>
         </div>
@@ -171,24 +161,18 @@ function App() {
     );
   }
 
-  if (!currentSession || sessionError) {
+  if (error) {
     return (
-      <AppLayout currentSession={null} onStartNewSession={handleStartNewSession}>
-        <Card className="max-w-md mx-auto mt-8">
-          <CardHeader>
-            <CardTitle>Welcome to RAG Evaluator</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">Start a new session to begin evaluating your RAG system.</p>
-            <Button onClick={handleStartNewSession}>Start New Session</Button>
-          </CardContent>
-        </Card>
+      <AppLayout currentSession="">
+        <div className="flex items-center justify-center h-full">
+          <p className="text-red-500">{error}</p>
+        </div>
       </AppLayout>
     );
   }
 
   return (
-    <AppLayout currentSession={currentSession} onStartNewSession={handleStartNewSession}>
+    <AppLayout currentSession={currentSession}>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="configuration">Configuration Set Up</TabsTrigger>
