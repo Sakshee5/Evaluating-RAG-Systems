@@ -9,21 +9,37 @@ import { useDocumentUpload } from "@/hooks/useDocumentUpload"
 import { useDeleteDocument } from "@/hooks/useDeleteDocument"
 import { useAddQuestion } from "@/hooks/useAddQuestion"
 import { useDeleteQuestion } from "@/hooks/useDeleteQuestion"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface DocumentManagerProps {
   sessionId: string;
+  initialDocuments?: Document[];
+  initialQuestions?: Question[];
   onDocumentsUpdated: (documents: Document[]) => void;
   onQuestionsUpdated: (questions: Question[]) => void;
 }
 
-export const DocumentManager = ({ sessionId, onDocumentsUpdated, onQuestionsUpdated }: DocumentManagerProps) => {
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [questions, setQuestions] = useState<Question[]>([]);
+export const DocumentManager = ({ 
+  sessionId, 
+  initialDocuments = [], 
+  initialQuestions = [], 
+  onDocumentsUpdated, 
+  onQuestionsUpdated 
+}: DocumentManagerProps) => {
+  const [documents, setDocuments] = useState<Document[]>(initialDocuments);
+  const [questions, setQuestions] = useState<Question[]>(initialQuestions);
   const [newQuestion, setNewQuestion] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDocuments(initialDocuments);
+  }, [initialDocuments]);
+
+  useEffect(() => {
+    setQuestions(initialQuestions);
+  }, [initialQuestions]);
 
   const { uploadDocument } = useDocumentUpload();
   const { deleteDocument } = useDeleteDocument();

@@ -10,6 +10,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
 
 interface RagResultCardProps {
   result: LLMResponse;
@@ -19,6 +21,47 @@ interface RagResultCardProps {
 
 export const RagResultCard = ({ result, configurations, configIndex = 0 }: RagResultCardProps) => {
   const config = configurations[configIndex];
+  const [activePlot, setActivePlot] = useState(0); // 0: UMAP, 1: tSNE, 2: PCA
+  const [imageErrors, setImageErrors] = useState<{[key: number]: boolean}>({});
+  
+  const getImageUrl = (path: string) => {
+    // Extract session_id and filename from the path
+    const parts = path.split(/[\\/]/);
+    const session_id = parts[parts.length - 2];
+    const filename = parts[parts.length - 1];
+    return `http://localhost:8000/api/static/${session_id}/${filename}`;
+  };
+
+  const handleImageError = (index: number) => {
+    setImageErrors(prev => ({ ...prev, [index]: true }));
+  };
+
+  const renderVisualization = (index: number) => {
+    if (imageErrors[index]) {
+      return (
+        <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
+          <p className="text-gray-500">Failed to load visualization</p>
+        </div>
+      );
+    }
+
+    if (!result.visualization_plot || !result.visualization_plot[index]) {
+      return (
+        <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
+          <p className="text-gray-500">Visualization not available</p>
+        </div>
+      );
+    }
+
+    return (
+      <img 
+        src={getImageUrl(result.visualization_plot[index])}
+        alt={`${index === 0 ? 'UMAP' : index === 1 ? 'tSNE' : 'PCA'} Visualization`}
+        className="w-full rounded-lg border"
+        onError={() => handleImageError(index)}
+      />
+    );
+  };
   
   return (
     <Card className="mb-6">
@@ -92,7 +135,14 @@ export const RagResultCard = ({ result, configurations, configIndex = 0 }: RagRe
           <div className="grid grid-cols-2 gap-4">
             <Accordion type="single" collapsible>
               <AccordionItem value="chunks">
-                <AccordionTrigger>View Chunks</AccordionTrigger>
+                <AccordionTrigger className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span>View Chunks</span>
+                    <span className="text-sm text-muted-foreground">
+                      RUS: {(result.rus_metrics.rus * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                </AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-4" style={{ maxHeight: '264px', overflowY: 'auto' }}>
                     {result.chunks.map((chunk) => (
@@ -104,14 +154,24 @@ export const RagResultCard = ({ result, configurations, configIndex = 0 }: RagRe
             </Accordion>
 
             <div>
-              {result.visualization_plot && (
+              {result.visualization_plot && result.visualization_plot.length > 0 && (
                 <div>
-                  <h3 className="font-medium mb-2">Embedding Space Visualization</h3>
-                  <img 
-                    src={`data:image/png;base64,${result.visualization_plot}`}
-                    alt="RAG Visualization" 
-                    className="w-full rounded-lg border"
-                  />
+                  <Tabs value={activePlot.toString()} onValueChange={(value) => setActivePlot(parseInt(value))}>
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="0">UMAP</TabsTrigger>
+                      <TabsTrigger value="1">tSNE</TabsTrigger>
+                      <TabsTrigger value="2">PCA</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="0">
+                      {renderVisualization(0)}
+                    </TabsContent>
+                    <TabsContent value="1">
+                      {renderVisualization(1)}
+                    </TabsContent>
+                    <TabsContent value="2">
+                      {renderVisualization(2)}
+                    </TabsContent>
+                  </Tabs>
                 </div>
               )}
             </div>

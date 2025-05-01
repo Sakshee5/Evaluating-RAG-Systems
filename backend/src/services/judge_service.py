@@ -43,7 +43,13 @@ class JudgeService:
                         }
                         for chunk in answer.chunks
                     ],
-                    "answer": answer.answer
+                    "answer": answer.answer,
+                    "rus_metrics": {
+                        "rus": answer.rus_metrics.rus,
+                        "normalized_dcr": answer.rus_metrics.normalized_dcr,
+                        "scaled_correlation": answer.rus_metrics.scaled_correlation,
+                        "wasted_similarity_penalty": answer.rus_metrics.wasted_similarity_penalty
+                    }
                 }
                 question_data["configurations"].append(config_data)
             
@@ -60,6 +66,7 @@ class JudgeService:
             else:
                 raise ValueError("Invalid LLM model")
             
+            print(judge_response)
             return judge_response
         except Exception as e:
             return {"error": f"Error: {str(e)}"}

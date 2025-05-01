@@ -42,6 +42,7 @@ Ensure:
 - Sum of relevance scores of all chunks should be 100%
 - Unused chunks can have 0% relevance and if only one chunk is used, it should have 100% relevance
 - The response must be a VALID JSON object without additional text
+- Include all chunks in the json response even if they have 0% relevance and keep the order of chunks same as in the context
 
 JSON RESPONSE FORMAT:
 {{
@@ -132,22 +133,28 @@ user_prompt = """## Input Data
 {input_data}
 
 ## Evaluation Guidelines
-Retrieval-Generation Alignment
-- Examine the order in which chunks are retrieved based on similarity scores versus their actual relevance to the answer.
--Diagnose why this happens—does it relate to chunking strategy, embedding model choice, similarity metric, or another factor?
+- The task is to analyze multiple RAG configurations and determine which one performs best based on the provided metrics and results.
+- Getting the correct final answer may not always be the best indicator of a good retrieval system. Analyze both the "retrieval" and "generation" components of the RAG pipeline.
+- Identify patterns that indicate an optimized or suboptimal process and the possible reasons for it.
+- Judge which answer is better overall in terms of information covered.
 
-Answer Quality & Chunk Utility
-- Is the final answer correct? If yes, was it derived from the most similar chunks?
-- If incorrect or suboptimal, diagnose whether the issue stems from missing context, incorrect ranking, or poor chunking.
 
-Cross-Configuration Comparison
-- Compare different retrieval configurations (e.g., chunk order differences between the runs).
-- Identify patterns that indicate an optimized or suboptimal retrieval process.
+Meaning of the Metrics in Input Data
+- Similarity Score: Similarity between the query and the chunk calculated using the similarity metric chosen in the configuration
+- Relevance Score: Assigned by an LLM to the chunk based on whether the data from the chunk was used to answer the query.
+- RUS: How well does the retrieval system rank relevant chunks? A combination of below 3 metrics.
+- Normalized DCR: How well does the retrieval system rank relevant chunks?
+- Similarity-Relevance Correlation: How well do similarity scores predict relevance?
+- Wasted Similarity Penalty: How much similarity is wasted on irrelevant chunks?
+
+
+Recommendations
+- Recommend the best configuration based on the metrics and accuracy of final answer and a brief rationale.
 
 ## Output Format
 {{
     "recommendation": "keep it brief, list best configuration details i.e. chunking strategy, embedding model, similarity metric, num chunks, etc.",
-    "analysis": ["insights about the data", "whatever you think is important to know", 'keep it relevant, short and concise']
+    "analysis": ["insights about the data", "whatever you think is important to know. dont throw numbers, just explain the metrics in a way that is easy to understand", 'keep it relevant, explain why you made the recommendation, short and concise']
 }}
 """
 

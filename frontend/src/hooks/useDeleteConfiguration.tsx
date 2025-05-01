@@ -23,7 +23,8 @@ export const useDeleteConfiguration = (): UseDeleteConfigurationReturn => {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to delete configuration');
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to delete configuration');
       }
       
       setIsLoading(false);

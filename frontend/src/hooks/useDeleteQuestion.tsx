@@ -23,7 +23,8 @@ export const useDeleteQuestion = (): UseDeleteQuestionReturn => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete question');
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to delete question');
       }
 
       setIsLoading(false);

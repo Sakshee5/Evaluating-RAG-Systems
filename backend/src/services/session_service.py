@@ -12,7 +12,7 @@ class SessionService:
         session.questions = []
         session.configurations = []
             
-        with open(f"data/session_{session.id}.json", "a") as f:
+        with open(f"data/session_{session.id}.json", "w", encoding="utf-8") as f:
             f.write(session.model_dump_json(indent=4))
         
         return session
@@ -27,7 +27,7 @@ class SessionService:
             if not os.path.exists(file_path):
                 raise FileNotFoundError(f"Session file not found: {file_path}")
                 
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 return Session.model_validate_json(f.read())
         except FileNotFoundError:
             raise ValueError(f"Session file not found: {file_path}")

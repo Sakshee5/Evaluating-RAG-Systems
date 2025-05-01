@@ -83,6 +83,8 @@ async def delete_document(document_id: str, session_id: str):
     try:
         DocumentService.delete_document(document_id, session_id)
         return {"message": "Document deleted!"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
@@ -91,6 +93,8 @@ async def delete_question(question_id: str, session_id: str):
     try:
         QuestionService.delete_question(question_id, session_id)
         return {"message": "Question deleted!"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
@@ -99,6 +103,8 @@ async def delete_configuration(configuration_id: str, session_id: str):
     try:
         ConfigurationService.delete_configuration(configuration_id, session_id)
         return {"message": "Configuration deleted!"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 

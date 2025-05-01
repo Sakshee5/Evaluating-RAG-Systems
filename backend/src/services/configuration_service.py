@@ -18,6 +18,7 @@ class ConfigurationService:
         """Add a configuration to a session"""
         configuration = Configuration(
             id=str(uuid.uuid4()),
+            session_id=session_id,
             chunking_strategy=chunking_strategy,
             token_size=token_size,
             sentence_size=sentence_size,
@@ -28,21 +29,35 @@ class ConfigurationService:
             num_chunks=num_chunks
         )
 
-        with open(f"data/session_{session_id}.json", "r") as f:
-            session = Session.model_validate_json(f.read())
-            session.configurations.append(configuration)
+        try:
+            with open(f"data/session_{session_id}.json", "r") as f:
+                session = Session.model_validate_json(f.read())
+                session.configurations.append(configuration)
 
-        with open(f"data/session_{session_id}.json", "w") as f:
-            f.write(session.model_dump_json(indent=4))
+            with open(f"data/session_{session_id}.json", "w") as f:
+                f.write(session.model_dump_json(indent=4))
 
-        return configuration
+            return configuration
+        except FileNotFoundError:
+            raise ValueError(f"Session {session_id} not found")
+        except Exception as e:
+            raise ValueError(f"Failed to add configuration: {str(e)}")
 
     @staticmethod
     def delete_configuration(configuration_id: str, session_id: str) -> None:
         """Delete a configuration from a session"""
-        with open(f"data/session_{session_id}.json", "r") as f:
-            session = Session.model_validate_json(f.read())
-            session.configurations = [config for config in session.configurations if config.id != configuration_id]
+        try:
+            with open(f"data/session_{session_id}.json", "r") as f:
+                session = Session.model_validate_json(f.read())
+                original_length = len(session.configurations)
+                session.configurations = [config for config in session.configurations if config.id != configuration_id]
+                
+                if len(session.configurations) == original_length:
+                    raise ValueError(f"Configuration {configuration_id} not found in session {session_id}")
 
-        with open(f"data/session_{session_id}.json", "w") as f:
-            f.write(session.model_dump_json(indent=4)) 
+            with open(f"data/session_{session_id}.json", "w") as f:
+                f.write(session.model_dump_json(indent=4))
+        except FileNotFoundError:
+            raise ValueError(f"Session {session_id} not found")
+        except Exception as e:
+            raise ValueError(f"Failed to delete configuration: {str(e)}") 

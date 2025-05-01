@@ -23,7 +23,8 @@ export const useDeleteDocument = (): UseDeleteDocumentReturn => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete document');
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to delete document');
       }
 
       setIsLoading(false);

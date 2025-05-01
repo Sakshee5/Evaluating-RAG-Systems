@@ -182,6 +182,8 @@ function App() {
           {/* Document and Questions Manager */}
           <DocumentManager 
             sessionId={currentSession} 
+            initialDocuments={documents}
+            initialQuestions={questions}
             onDocumentsUpdated={setDocuments}
             onQuestionsUpdated={setQuestions}
           />

@@ -1,14 +1,15 @@
 from typing import List, Dict, Any
 from models.processed_document import ProcessedDocument
-from models.llm_response import LLMResponse
+from models.llm_response import LLMResponse, RUSMetrics
 from components.chunking import chunk_by_sentence, chunk_by_paragraph, chunk_by_page, chunk_by_tokens
 from components.embedding import EmbeddingGenerator
 from components.similarity_metrics import SimilarityCalculator
 from components.genai import generate_gemini_response, generate_openai_response, format_context_for_llm
+from components.utils import calculate_rus
 from services.document_service import DocumentService
 from services.session_service import SessionService
 from models.llm_response import Chunk
-from components.visualization import PCA_visualization
+from components.visualization import PCA_visualization, tSNE_visualization, UMAP_visualization
 from fastapi import HTTPException
 import json
 import os
@@ -177,6 +178,11 @@ class RAGService:
                     chunks_data = []
                     relevance_analysis = answer["relevance_analysis"]
 
+                    # Calculate RUS
+                    similarity_scores_list = [similarity_scores[chunk["chunk_number"] - 1] for chunk in relevance_analysis]
+                    relevance_scores_list = [chunk["relevance_score"] / 100.0 for chunk in relevance_analysis]  # Normalize to 0-1
+                    rus_result = calculate_rus(similarity_scores_list, relevance_scores_list)
+
                     for chunk in relevance_analysis:
                         chunks_data.append(
                             Chunk(
@@ -193,7 +199,9 @@ class RAGService:
             try:
                 # Generate visualization plot
                 response_embedding = EmbeddingGenerator.get_embeddings([answer["answer"]], configuration.embedding_model)[0]
-                img_base64 = PCA_visualization(processed_document.embeddings, query_embedding, response_embedding, [chunk["chunk_number"] - 1 for chunk in relevance_analysis])
+                pca_path = PCA_visualization(processed_document.embeddings, query_embedding, response_embedding, [chunk["chunk_number"] - 1 for chunk in relevance_analysis], session_id, question.id)
+                tsne_path = tSNE_visualization(processed_document.embeddings, query_embedding, response_embedding, [chunk["chunk_number"] - 1 for chunk in relevance_analysis], session_id, question.id)
+                umap_path = UMAP_visualization(processed_document.embeddings, query_embedding, response_embedding, [chunk["chunk_number"] - 1 for chunk in relevance_analysis], session_id, question.id)
 
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Visualization plot saving server error: {str(e)}")
@@ -203,7 +211,13 @@ class RAGService:
                         question=question.question_string,
                         answer=answer["answer"],
                         chunks=chunks_data,
-                        visualization_plot=img_base64
+                        visualization_plot=[umap_path, tsne_path, pca_path],  # Order: UMAP, tSNE, PCA
+                        rus_metrics=RUSMetrics(
+                            rus=rus_result["RUS"],
+                            normalized_dcr=rus_result["Normalized_DCR"],
+                            scaled_correlation=rus_result["Scaled_Correlation"],
+                            wasted_similarity_penalty=rus_result["Wasted_Similarity_Penalty"]
+                        )
                     )
 
                     # save to session
