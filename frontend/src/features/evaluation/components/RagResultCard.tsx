@@ -144,10 +144,12 @@ export const RagResultCard = ({ result, configurations, configIndex = 0 }: RagRe
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-4" style={{ maxHeight: '264px', overflowY: 'auto' }}>
-                    {result.chunks.map((chunk) => (
-                      <ChunkDisplay key={chunk.chunk_number} chunk={chunk} />
-                    ))}
+                  <div className="space-y-1" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    {[...result.chunks]
+                      .sort((a, b) => b.similarity_score - a.similarity_score)
+                      .map((chunk) => (
+                        <ChunkDisplay key={chunk.chunk_number} chunk={chunk} />
+                      ))}
                   </div>
                 </AccordionContent>
               </AccordionItem>

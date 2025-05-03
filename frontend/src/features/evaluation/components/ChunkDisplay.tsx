@@ -18,9 +18,9 @@ interface ChunkDisplayProps {
 
 export const ChunkDisplay = ({ chunk }: ChunkDisplayProps) => {
   return (
-    <Card className="mb-4">
-      <CardContent className="pt-6">
-        <div className="space-y-4">
+    <Card className="mb-2">
+      <CardContent className="pt-2">
+        <div className="space-y-2">
           <div className="flex justify-between items-center">
             <TooltipProvider>
               <Tooltip>

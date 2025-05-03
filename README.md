@@ -1,6 +1,10 @@
 # RAG Analyzer
 
+Read more about it @ [Medium Article](https://saksheepatil05.medium.com/making-rag-evaluation-less-of-a-black-box-e95dc9cc02e2).
+
 A tool for evaluating and optimizing Retrieval-Augmented Generation (RAG) pipelines. This project helps understand, analyze, and improve their RAG implementations by providing insights into retrieval performance and relevance.
+
+![Application Interface](assets/app.png).
 
 ## Problem Statement
 
@@ -17,9 +21,14 @@ RAG Analyzer addresses these challenges by providing:
 
 - Detailed analysis of retrieval performance
 - Comparison of different RAG configurations
+
+![Comparing Configurations](assets/configs.png).
+
 - Visualization of similarity scores vs. actual relevance
 - Tools for identifying optimal RAG pipeline configurations
 - Transparent and explainable retrieval process
+
+![Results](assets/results.png).
 
 ## Tech Stack
 

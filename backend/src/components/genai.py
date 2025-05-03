@@ -93,8 +93,10 @@ Based purely on the above context, respond with a valid JSON object containing:
 
 Ensure:
 - Sum of relevance scores of all chunks should be 100%.
-- Unused chunks can have 0% relevance and if only one chunk is used, it should have 100% relevance.  Even if 0% relevance, include all chunks in json response.
+- Unused chunks can have 0% relevance and if only one chunk is used, it should have 100% relevance. Even if 0% relevance, include all chunks in json response.
 - The response must be a VALID JSON object without additional text
+- Include all chunks in the json response even if they have 0% relevance and keep the order of chunks same as in the context
+
 
 JSON RESPONSE FORMAT:
 {{
@@ -151,7 +153,7 @@ Meaning of the Metrics in Input Data
 Recommendations
 - Recommend the best configuration based on the metrics and accuracy of final answer and a brief rationale.
 
-## Output Format
+## JSON Output Format
 {{
     "recommendation": "keep it brief, list best configuration details i.e. chunking strategy, embedding model, similarity metric, num chunks, etc.",
     "analysis": ["insights about the data", "whatever you think is important to know. dont throw numbers, just explain the metrics in a way that is easy to understand", 'keep it relevant, explain why you made the recommendation, short and concise']
